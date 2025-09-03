@@ -3,516 +3,1787 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agronare - Sistema de Gestión Agrícola</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Agronare - Sistema de Gestión</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/xlsx.full.min.js"></script>
     <style>
-        /* Reset básico y Tipografía */
-        * {
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            overflow: hidden;
         }
-        body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.5;
-            background-color: #f9fafb;
-            color: #1f2937;
-        }
-
-        /* Colores Primarios */
-        :root {
-            --primary-50: #ecfdf5;
-            --primary-100: #d1fae5;
-            --primary-500: #10b981;
-            --primary-600: #059669;
-            --primary-700: #047857;
-        }
-
-        /* --- Pantalla de Login --- */
-        .login-background {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--primary-600);
-            transition: opacity 0.5s;
-        }
-        .login-container {
-            background-color: white;
+        .card {
+            background-color: #fff;
             border-radius: 0.75rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            padding: 2rem;
-            width: 100%;
-            max-width: 28rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
         }
-        .login-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 0.25rem;
-        }
-        .login-input {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-        }
-        .login-input:focus {
-            outline: none;
-            border-color: var(--primary-500);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-        }
-        .login-button {
-            width: 100%;
-            background-color: var(--primary-600);
-            color: white;
-            font-weight: 700;
-            padding: 0.75rem 1rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .login-button:hover {
-            background-color: var(--primary-700);
-        }
-
-        /* --- Layout Principal --- */
-        .header {
-            background-color: white;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            height: 4rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1.5rem;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 40;
-        }
-        .main-panel {
-            display: flex;
-            padding-top: 4rem;
-        }
-        .main-content {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-            height: calc(100vh - 4rem);
-        }
-
-        /* --- Barra Lateral (Sidebar) --- */
         .sidebar {
-            background-color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            width: 256px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            z-index: 30;
-            transition: transform 0.3s ease;
+            width: 280px;
+            min-width: 280px;
             transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            position: fixed;
+            z-index: 50;
         }
         .sidebar.open {
             transform: translateX(0);
         }
         .sidebar-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 20;
             display: none;
         }
         .sidebar-overlay.open {
             display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
         }
-        .sidebar-header {
-            padding: 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .nav-menu {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem 0;
+        @media (min-width: 768px) {
+            .sidebar {
+                transform: translateX(0);
+                position: relative;
+                min-height: 100vh;
+            }
+            .sidebar-overlay.open {
+                display: none;
+            }
         }
         .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1.5rem;
-            color: #374151;
-            text-decoration: none;
-            transition: background-color 0.2s;
-        }
-        .nav-link:hover {
-            background-color: #f9fafb;
+            transition: background-color 0.2s, color 0.2s;
         }
         .nav-link.active {
-            background-color: var(--primary-50);
-            font-weight: 600;
-            color: var(--primary-700);
+            background-color: #d1fae5;
+            color: #047857;
+            border-left: 4px solid #059669;
         }
-        .nav-link.active .nav-icon {
-            color: var(--primary-600);
-        }
-        .nav-icon {
-            width: 1.5rem;
-            text-align: center;
-            color: #9ca3af;
-            margin-right: 0.75rem;
-        }
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid #e5e7eb;
-        }
-        .logout-button {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            background-color: #fee2e2;
-            color: #b91c1c;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .logout-button:hover {
-            background-color: #fecaca;
-        }
-
-        /* --- Controles de la Barra Superior --- */
-        .branch-selector {
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            padding: 0.375rem 0.75rem;
-            font-size: 0.875rem;
-            background-color: white;
-        }
-        .user-avatar {
-            background-color: var(--primary-500);
-            color: white;
-            border-radius: 9999px;
-            width: 2rem;
-            height: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-        }
-
-        /* --- Componentes Generales --- */
-        .card {
-            background-color: white;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-        }
-        .form-label {
-            display: block;
-            margin-bottom: 0.25rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-        }
-        .form-input {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
+        .nav-link:hover:not(.active) {
+            background-color: #f3f4f6;
         }
         .btn-primary {
-            background-color: var(--primary-600);
+            background-color: #059669;
             color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
             font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            border: none;
-            cursor: pointer;
             transition: background-color 0.2s;
+            text-align: center;
         }
-        .btn-primary:hover {
-            background-color: var(--primary-700);
-        }
+        .btn-primary:hover { background-color: #047857; }
         .btn-primary:disabled {
-            background-color: #9ca3af;
+            background-color: #a3a3a3;
             cursor: not-allowed;
         }
         .btn-secondary {
             background-color: #e5e7eb;
-            color: #1f2937;
+            color: #4b5563;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
             font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            border: none;
-            cursor: pointer;
             transition: background-color 0.2s;
         }
+        .btn-secondary:hover { background-color: #d1d5db; }
         .btn-danger {
-            background-color: #dc2626;
+            background-color: #ef4444;
             color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
             font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            border: none;
-            cursor: pointer;
             transition: background-color 0.2s;
         }
-
-
-        /* --- Notificaciones y Modales --- */
+        .btn-danger:hover { background-color: #dc2626; }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5da;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
         .notification-container {
             position: fixed;
             bottom: 1rem;
             right: 1rem;
             z-index: 50;
+        }
+        .notification {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transform: translateX(0);
+            transition: transform 0.5s ease-out, opacity 0.5s ease-out;
+            opacity: 1;
+        }
+        .notification.fade-out {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        .notification-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .notification-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .notification-warn {
+            background-color: #fffbeb;
+            color: #92400e;
+        }
+        .notification-info {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
         }
         .modal-backdrop {
             position: fixed;
-            inset: 0;
-            z-index: 50;
-            background-color: rgba(0,0,0,0.5);
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            z-index: 50;
             padding: 1rem;
         }
         .modal-content {
-            background-color: white;
+            background-color: #fff;
+            padding: 2rem;
             border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
         }
-
-        /* Clases de utilidad */
-        .hidden { display: none; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
-        .justify-center { justify-content: center; }
-        .text-center { text-align: center; }
-        .space-x-4 > * + * { margin-left: 1rem; }
-        .space-y-6 > * + * { margin-top: 1.5rem; }
-        .text-red-500 { color: #ef4444; }
-        .text-sm { font-size: 0.875rem; }
-        .font-medium { font-weight: 500; }
-        .min-h-\[1\.25rem\] { min-height: 1.25rem; }
-        .mx-auto { margin-left: auto; margin-right: auto; }
-        .h-40 { height: 10rem; }
-        .h-16 { height: 4rem; }
-        .w-auto { width: auto; }
-        .h-80 { height: 20rem; }
-        .p-5 { padding: 1.25rem; }
-        .p-6 { padding: 1.5rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .gap-6 { gap: 1.5rem; }
-        .grid { display: grid; }
-        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-        .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-        .lg\:col-span-2 { grid-column: span 2 / span 2; }
-        .mt-6 { margin-top: 1.5rem; }
-        .font-bold { font-weight: 700; }
-        .text-gray-800 { color: #1f2937; }
-        .mb-4 { margin-bottom: 1rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .text-gray-600 { color: #4b5563; }
-        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .border { border-width: 1px; }
-        .text-gray-700 { color: #374151; }
-        .mr-2 { margin-right: 0.5rem; }
-        .text-xl { font-size: 1.25rem; }
-        .bg-emerald-100 { background-color: #d1fae5; }
-        .p-3 { padding: 0.75rem; }
-        .rounded-full { border-radius: 9999px; }
-        .text-emerald-600 { color: #059669; }
-        .bg-amber-100 { background-color: #fef3c7; }
-        .text-amber-600 { color: #d97706; }
-        .bg-sky-100 { background-color: #e0f2fe; }
-        .text-sky-600 { color: #0284c7; }
-        .bg-indigo-100 { background-color: #e0e7ff; }
-        .text-indigo-600 { color: #4f46e5; }
-        .text-lg { font-size: 1.125rem; }
-        .bg-gray-50 { background-color: #f9fafb; }
-        .min-h-\[100px\] { min-height: 100px; }
-        .category-filter {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: 500;
-            font-size: 0.875rem;
+        .pos-product-card {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #d1d5db;
-            background-color: white;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .category-filter.active, .category-filter:hover {
-            background-color: var(--primary-600);
+        .pos-product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .pos-product-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pos-product-card.in-cart {
+            border: 2px solid #059669;
+        }
+        .in-cart-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #059669;
             color: white;
-            border-color: var(--primary-600);
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
-
-        /* Responsive */
-        @media (min-width: 768px) {
-            .sidebar {
-                transform: translateX(0);
-                position: sticky;
-                top: 4rem; /* Altura del header */
-                height: calc(100vh - 4rem);
-            }
-            .main-panel {
-                padding-left: 256px; /* Ancho del sidebar */
-            }
-            .header {
-                left: 256px;
-            }
-            #menu-toggle {
-                display: none;
-            }
-            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .category-filter {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .category-filter.active {
+            background-color: #059669;
+            color: white;
+        }
+        .category-filter:hover:not(.active) {
+            background-color: #e5e7eb;
         }
     </style>
 </head>
 <body>
-    <!-- Pantalla de Login -->
-    <div id="login-screen" class="login-background">
-        <div class="login-container">
-            <div class="text-center mb-8">
-                <img src="favicon.jpg" alt="Agronare Logo" class="mx-auto h-40 w-auto">
-                <p class="text-gray-600 mt-4">Sistema de Gestión Agrícola</p>
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-100 transition-opacity duration-500 ease-in-out">
+        <div class="w-full max-w-sm p-8 bg-white rounded-lg shadow-xl border border-gray-200">
+            <div class="flex flex-col items-center mb-6">
+                <img src="logo.png" alt="Agronare Logo" class="h-40 mb-4 rounded-full">
+                <h2 class="text-2xl font-bold text-gray-900">Iniciar Sesión</h2>
             </div>
-            <form id="login-form" class="space-y-6">
+            <form id="login-form" class="space-y-4">
                 <div>
-                    <label for="username" class="login-label">Usuario</label>
-                    <input type="email" id="username" name="username" autocomplete="username" class="login-input" required>
+                    <label for="username" class="form-label">Usuario</label>
+                    <input type="text" id="username" name="username" required class="form-input">
                 </div>
                 <div>
-                    <label for="password" class="login-label">Contraseña</label>
-                    <input type="password" id="password" name="password" autocomplete="current-password" class="login-input" required>
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" id="password" name="password" required class="form-input">
                 </div>
-                <div id="login-error" class="text-red-500 text-sm min-h-[1.25rem]"></div>
-                <button type="submit" class="login-button">Iniciar Sesión</button>
+                <button type="submit" class="w-full btn-primary">Entrar</button>
             </form>
+            <p id="login-error" class="mt-4 text-center text-red-600 text-sm"></p>
         </div>
     </div>
 
-    <!-- Panel de Administración -->
-    <div id="admin-panel" class="hidden opacity-0 transition-opacity duration-300">
-         <header class="header">
-            <div class="flex items-center">
-                <button id="menu-toggle" data-action="toggleSidebar" class="text-gray-500 mr-4">
-                    <i class="fas fa-bars text-xl"></i>
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="hidden h-screen w-full flex bg-gray-100 transition-opacity duration-500 ease-in-out">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar bg-white shadow-xl flex flex-col">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                <img src="logo.png" alt="Agronare Logo" class="h-10">
+                <button id="menu-toggle" class="md:hidden text-gray-500 hover:text-gray-700 text-2xl leading-none" aria-label="Cerrar menú">
+                    &times;
                 </button>
-                <h1 id="section-title" class="text-xl font-bold text-gray-800">Resumen</h1>
             </div>
-            <div class="flex items-center space-x-4">
-                <div id="branch-selector-container" class="hidden">
-                    <select id="branch-selector" class="branch-selector">
-                        <!-- Opciones de sucursales -->
+            <nav id="nav-menu" class="flex-1 overflow-y-auto px-4 py-6 space-y-2">
+                <a href="#" data-action="navigateTo" data-section="dashboard" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium active">
+                    <i class="fas fa-home mr-3 text-lg" aria-hidden="true"></i><span>Dashboard</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="pos" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-cash-register mr-3 text-lg" aria-hidden="true"></i><span>Punto de Venta</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="sales" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-chart-line mr-3 text-lg" aria-hidden="true"></i><span>Ventas</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="inventory" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-boxes mr-3 text-lg" aria-hidden="true"></i><span>Inventario</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="clients" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-users mr-3 text-lg" aria-hidden="true"></i><span>Clientes</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="suppliers" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-truck mr-3 text-lg" aria-hidden="true"></i><span>Proveedores</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="purchases" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-shopping-cart mr-3 text-lg" aria-hidden="true"></i><span>Compras</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="quotes" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-file-invoice-dollar mr-3 text-lg" aria-hidden="true"></i><span>Cotizaciones</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="payments" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-coins mr-3 text-lg" aria-hidden="true"></i><span>Pagos y Créditos</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="cashReconciliation" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-box-open mr-3 text-lg" aria-hidden="true"></i><span>Corte de Caja</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="transfers" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-exchange-alt mr-3 text-lg" aria-hidden="true"></i><span>Transferencias</span>
+                </a>
+                <a href="#" data-action="navigateTo" data-section="settings" class="nav-link flex items-center p-3 rounded-lg text-gray-700 font-medium">
+                    <i class="fas fa-cog mr-3 text-lg" aria-hidden="true"></i><span>Configuración</span>
+                </a>
+            </nav>
+            <div class="p-6 border-t border-gray-200">
+                <div id="user-display" class="flex items-center space-x-3 mb-4">
+                    <i class="fas fa-user-circle text-gray-400 text-4xl" aria-hidden="true"></i>
+                    <div>
+                        <p class="font-bold text-gray-900">Usuario</p>
+                        <p class="text-sm text-gray-500">Rol</p>
+                    </div>
+                </div>
+                <div id="branch-selector-container" class="mb-4 hidden">
+                    <label for="branch-selector" class="block text-sm font-medium text-gray-500 mb-1">Sucursal:</label>
+                    <select id="branch-selector" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
                     </select>
                 </div>
-                <div id="user-display" class="flex items-center space-x-2">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="text-left">
-                        <p class="font-medium text-sm">Cargando...</p>
-                        <p class="text-xs text-gray-500">Cargando rol...</p>
-                    </div>
-                </div>
+                <button data-action="logout" class="w-full btn-secondary flex items-center justify-center">
+                    <i class="fas fa-sign-out-alt mr-2" aria-hidden="true"></i>Cerrar Sesión
+                </button>
             </div>
-        </header>
+        </aside>
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
-        <div class="main-panel">
-            <aside id="sidebar" class="sidebar">
-                <div class="sidebar-header">
-                    <img src="favicon.jpg" alt="Agronare Logo" class="h-16">
+        <!-- Main Panel -->
+        <main class="main-panel flex-1 flex flex-col h-screen overflow-y-auto w-full transition-all duration-300">
+            <!-- Top Bar -->
+            <header class="bg-white sticky top-0 z-10 shadow-sm border-b border-gray-200">
+                <div class="px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button id="menu-toggle" class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 mr-4" aria-label="Abrir menú">
+                            <i class="fas fa-bars" aria-hidden="true"></i>
+                        </button>
+                        <h1 id="section-title" class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                    </div>
                 </div>
-                <nav id="nav-menu" class="nav-menu">
-                    <a href="#" data-action="navigateTo" data-section="dashboard" class="nav-link active">
-                        <i class="fas fa-home nav-icon"></i><span>Resumen</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="pos" class="nav-link">
-                        <i class="fas fa-cash-register nav-icon"></i><span>Punto de Venta</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="sales" class="nav-link">
-                       <i class="fas fa-chart-line nav-icon"></i><span>Ventas</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="inventory" class="nav-link">
-                        <i class="fas fa-box nav-icon"></i><span>Inventario</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="clients" class="nav-link">
-                        <i class="fas fa-users nav-icon"></i><span>Clientes</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="suppliers" class="nav-link">
-                        <i class="fas fa-truck nav-icon"></i><span>Proveedores</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="purchases" class="nav-link">
-                        <i class="fas fa-shopping-cart nav-icon"></i><span>Compras</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="quotes" class="nav-link">
-                        <i class="fas fa-file-invoice nav-icon"></i><span>Cotizaciones</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="payments" class="nav-link">
-                        <i class="fas fa-money-bill-wave nav-icon"></i><span>Pagos y Créditos</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="cashReconciliation" class="nav-link">
-                        <i class="fas fa-calculator nav-icon"></i><span>Corte de Caja</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="transfers" class="nav-link">
-                        <i class="fas fa-exchange-alt nav-icon"></i><span>Transferencias</span>
-                    </a>
-                    <a href="#" data-action="navigateTo" data-section="settings" class="nav-link">
-                        <i class="fas fa-cog nav-icon"></i><span>Configuración</span>
-                    </a>
-                </nav>
-                <div class="sidebar-footer">
-                    <button data-action="logout" class="logout-button">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Cerrar Sesión</span>
-                    </button>
-                </div>
-            </aside>
-            <div id="sidebar-overlay" class="sidebar-overlay" data-action="toggleSidebar"></div>
+            </header>
 
-            <main class="main-content">
-                <div id="main-content">
-                    <!-- El contenido se generará dinámicamente aquí -->
-                </div>
-            </main>
-        </div>
+            <!-- Main Content Area -->
+            <div id="main-content" class="flex-1 p-6 space-y-6 overflow-y-auto">
+                <!-- Content will be injected here -->
+            </div>
+        </main>
     </div>
 
-    <!-- Contenedores -->
+    <!-- Modal Container -->
     <div id="modal-container"></div>
+    <!-- Notification Container -->
     <div id="notification-container" class="notification-container"></div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    <script src="app.js"></script>
 </body>
-</html>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = {
+            state: {
+                currentUser: null,
+                currentSection: 'dashboard',
+                branches: [
+                    { id: 1, name: 'Copandaro' },
+                    { id: 2, name: 'Zamora' },
+                    { id: 3, name: 'Cuanajo' },
+                ],
+                users: [
+                    { id: 1, username: 'admin@agronare.mx', password: 'password', name: 'Administrador General', role: 'Admin', branchId: null },
+                    { id: 2, username: 'copandaro@agronare.mx', password: 'password', name: 'Vendedor Copandaro', role: 'Vendedor', branchId: 1 },
+                    { id: 3, username: 'zamora@agronare.mx', password: 'password', name: 'Vendedor Zamora', role: 'Vendedor', branchId: 2 },
+                    { id: 4, username: 'cuanajo@agronare.mx', password: 'password', name: 'Vendedor Cuanajo', role: 'Vendedor', branchId: 3 },
+                ],
+                currentBranchId: 1,
+                products: [
+                    { id: 1, branchId: 1, name: 'Herbicida Faena', type: 'Agroquímico', description: 'Control de maleza de hoja ancha y angosta en post-emergencia.', quantity: 12, minStock: 10, price: 250.50 },
+                    { id: 2, branchId: 1, name: 'Urea (Bulto 50kg)', type: 'Fertilizante', description: 'Fertilizante nitrogenado de alta concentración para etapas de crecimiento.', quantity: 120, minStock: 40, price: 850.00 },
+                    { id: 3, branchId: 1, name: 'Fungicida Manzate', type: 'Agroquímico', description: 'Fungicida preventivo de amplio espectro para hortalizas y frutales.', quantity: 5, minStock: 8, price: 450.75 },
+                    { id: 4, branchId: 2, name: 'Herbicida Faena', type: 'Agroquímico', description: 'Control de maleza de hoja ancha y angosta en post-emergencia.', quantity: 50, minStock: 10, price: 255.00 },
+                    { id: 5, branchId: 2, name: 'Semilla Maíz Híbrido', type: 'Semilla', description: 'Semilla de alto rendimiento para siembra en temporal o riego.', quantity: 300, minStock: 100, price: 1250.00 },
+                    { id: 6, branchId: 3, name: 'Triple 17 (Bulto)', type: 'Fertilizante', description: 'Fertilizante NPK completo.', quantity: 150, minStock: 50, price: 930.00 },
+                ],
+                clients: [
+                    { id: 1, branchId: 1, name: 'Juan Pérez García', phone: '4431234567', email: 'juan.perez@email.com', hasCredit: true, creditLimit: 5000, creditUsed: 1500.50, creditCutoffDate: '2025-09-15', creditPaymentDate: '2025-09-30' },
+                    { id: 2, branchId: 2, name: 'Ana López Hernández', phone: '4437654321', email: 'ana.lopez@email.com', hasCredit: false, creditLimit: 0, creditUsed: 0, creditCutoffDate: null, creditPaymentDate: null },
+                ],
+                suppliers: [
+                    { id: 1, branchId: 1, name: 'Agroinsumos del Valle', contact: 'Carlos Rodriguez', phone: '5512345678', hasCredit: true, creditLimit: 20000, creditUsed: 8500, creditCutoffDate: '2025-09-20', creditPaymentDate: '2025-10-05' }
+                ],
+                payments: [],
+                sales: [
+                    { id: 1, branchId: 1, clientName: 'Juan Pérez García', paymentMethod: 'Credito', total: 1500.50, date: '2025-09-01T10:00:00Z', items: [{ name: 'Herbicida Faena', quantity: 2, price: 250.50, type: 'Agroquímico' }] },
+                    { id: 2, branchId: 1, clientName: 'Mostrador', paymentMethod: 'Contado', total: 600, date: '2025-09-02T11:00:00Z', items: [{ name: 'Urea (Bulto 50kg)', quantity: 1, price: 600, type: 'Fertilizante' }] },
+                    { id: 3, branchId: 2, clientName: 'Ana López Hernández', paymentMethod: 'Contado', total: 1250, date: '2025-09-02T14:30:00Z', items: [{ name: 'Semilla Maíz Híbrido', quantity: 1, price: 1250, type: 'Semilla' }] },
+                ],
+                purchases: [],
+                quotes: [],
+                activities: [],
+                cart: [],
+                cashReconciliations: [],
+                transfers: [],
+                charts: {},
+                LOW_STOCK_THRESHOLD: 15,
+                posSearchTerm: '',
+                posCategoryFilter: 'Todos',
+                inventorySearchTerm: '',
+                inventoryCategoryFilter: 'Todos',
+            },
 
+            undo: {
+                last: null,
+                set(cb, label) { this.last = { do: cb, label }; },
+                clear() { this.last = null; }
+            },
+
+            init() {
+                this.cacheDOM();
+                this.loadFromStorage();
+                this.bindEvents();
+                this.navigateTo('dashboard'); // Iniciar en el dashboard
+            },
+
+            cacheDOM() {
+                this.dom = {
+                    loginScreen: document.getElementById('login-screen'),
+                    loginForm: document.getElementById('login-form'),
+                    loginError: document.getElementById('login-error'),
+                    adminPanel: document.getElementById('admin-panel'),
+                    mainPanel: document.querySelector('.main-panel'),
+                    mainContent: document.getElementById('main-content'),
+                    sidebar: document.getElementById('sidebar'),
+                    sidebarOverlay: document.getElementById('sidebar-overlay'),
+                    modalContainer: document.getElementById('modal-container'),
+                    notificationContainer: document.getElementById('notification-container'),
+                    navMenu: document.getElementById('nav-menu'),
+                    sectionTitle: document.getElementById('section-title'),
+                    menuToggle: document.getElementById('menu-toggle'),
+                    branchSelector: document.getElementById('branch-selector'),
+                    branchSelectorContainer: document.getElementById('branch-selector-container'),
+                    userDisplay: document.getElementById('user-display'),
+                };
+            },
+
+            bindEvents() {
+                this.dom.loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const d = Object.fromEntries(new FormData(e.target));
+                    this.handleLogin(d.username, d.password);
+                });
+
+                document.body.addEventListener('click', this.handleAction.bind(this));
+                document.body.addEventListener('submit', this.handleFormSubmit.bind(this));
+                document.body.addEventListener('input', this.handleInput.bind(this));
+                document.body.addEventListener('change', this.handleChange.bind(this));
+                this.dom.branchSelector.addEventListener('change', this.handleBranchSwitch.bind(this));
+                this.dom.menuToggle.addEventListener('click', () => this.toggleSidebar());
+                this.dom.sidebarOverlay.addEventListener('click', () => this.toggleSidebar());
+            },
+
+            persistState() {
+                const keys = ['products', 'clients', 'suppliers', 'sales', 'purchases', 'quotes', 'cashReconciliations', 'transfers', 'branches', 'users', 'payments'];
+                keys.forEach(k => localStorage.setItem(`agronare_${k}`, JSON.stringify(this.state[k])));
+                localStorage.setItem('agronare_currentBranchId', String(this.state.currentBranchId));
+            },
+
+            loadFromStorage() {
+                const keys = ['products', 'clients', 'suppliers', 'sales', 'purchases', 'quotes', 'cashReconciliations', 'transfers', 'branches', 'users', 'payments'];
+                keys.forEach(k => {
+                    const v = localStorage.getItem(`agronare_${k}`);
+                    if (v) {
+                        try {
+                            const p = JSON.parse(v);
+                            if (Array.isArray(p)) this.state[k] = p;
+                        } catch { /* noop */ }
+                    }
+                });
+                const bid = localStorage.getItem('agronare_currentBranchId');
+                if (bid) this.state.currentBranchId = parseInt(bid) || this.state.currentBranchId;
+            },
+
+            handleLogin(username, password) {
+                const user = this.state.users.find(u => u.username === username && u.password === password);
+                if (user) {
+                    this.state.currentUser = user;
+                    this.dom.loginError.textContent = '';
+                    this.dom.loginScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        this.dom.loginScreen.classList.add('hidden');
+                        this.dom.adminPanel.classList.remove('hidden');
+                        setTimeout(() => this.dom.adminPanel.style.opacity = '1', 50);
+                        this.setupPanelForUser();
+                    }, 500);
+                } else {
+                    this.dom.loginError.textContent = 'Usuario o contraseña incorrectos.';
+                }
+            },
+
+            handleLogout() {
+                this.state.currentUser = null;
+                this.dom.adminPanel.style.opacity = '0';
+                setTimeout(() => {
+                    this.dom.adminPanel.classList.add('hidden');
+                    this.dom.loginScreen.classList.remove('hidden');
+                    this.dom.loginForm.reset();
+                    setTimeout(() => this.dom.loginScreen.style.opacity = '1', 50);
+                }, 500);
+            },
+
+            toggleSidebar() {
+                this.dom.sidebar.classList.toggle('open');
+                this.dom.sidebarOverlay.classList.toggle('open');
+            },
+
+            setupPanelForUser() {
+                const user = this.state.currentUser;
+                if (!user) return;
+                this.dom.userDisplay.querySelector('p:first-child').textContent = user.name;
+                this.dom.userDisplay.querySelector('p:last-child').textContent = user.role;
+                if (user.role === 'Admin') {
+                    this.dom.branchSelectorContainer.classList.remove('hidden');
+                    if (!this.state.branches.some(b => b.id === this.state.currentBranchId)) {
+                        this.state.currentBranchId = this.state.branches[0].id;
+                    }
+                    this.populateBranchSelector();
+                } else {
+                    this.dom.branchSelectorContainer.classList.add('hidden');
+                    this.state.currentBranchId = user.branchId;
+                }
+                this.navigateTo('dashboard');
+            },
+
+            populateBranchSelector() {
+                this.dom.branchSelector.innerHTML = this.state.branches
+                    .map(b => `<option value="${b.id}" ${b.id === this.state.currentBranchId ? 'selected' : ''}>${b.name}</option>`)
+                    .join('');
+            },
+
+            handleBranchSwitch(e) {
+                this.state.currentBranchId = parseInt(e.target.value);
+                this.navigateTo(this.state.currentSection);
+            },
+
+            navigateTo(section) {
+                this.state.currentSection = section;
+                this.render();
+                this.dom.navMenu.querySelectorAll('.nav-link').forEach(l => {
+                    l.classList.toggle('active', l.dataset.section === section);
+                });
+                if (window.innerWidth < 768 && this.dom.sidebar.classList.contains('open')) {
+                    this.toggleSidebar();
+                }
+            },
+
+            render() {
+                const sectionTemplate = this.templates[this.state.currentSection];
+                if (sectionTemplate) {
+                    this.dom.mainContent.innerHTML = sectionTemplate(this.state);
+                    const title = this.dom.navMenu.querySelector(`.nav-link[data-section="${this.state.currentSection}"] span`).textContent;
+                    this.dom.sectionTitle.textContent = title;
+                    if (this.state.currentSection === 'dashboard') {
+                        setTimeout(() => this.renderCharts(), 0); // Corregido: Retrasar renderizado de gráficos
+                    }
+                }
+            },
+
+            renderCharts() {
+                Object.values(this.state.charts).forEach(c => c && typeof c.destroy === 'function' && c.destroy());
+                this.state.charts = {};
+                const branchSales = this.state.sales.filter(s => s.branchId === this.state.currentBranchId);
+                const categorySales = {};
+                branchSales.forEach(s => s.items.forEach(i => {
+                    categorySales[i.type] = (categorySales[i.type] || 0) + (i.price * i.quantity);
+                }));
+                const categoryCtx = document.getElementById('categorySalesChart')?.getContext('2d');
+                if (categoryCtx && Object.keys(categorySales).length > 0) {
+                    this.state.charts.categoryChart = new Chart(categoryCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(categorySales),
+                            datasets: [{
+                                data: Object.values(categorySales),
+                                backgroundColor: ['#047857', '#059669', '#10b981', '#34d399', '#6ee7b7'],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+                const monthlyCtx = document.getElementById('monthlySalesChart')?.getContext('2d');
+                if (monthlyCtx) {
+                    this.state.charts.monthlyChart = new Chart(monthlyCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'Ventas Mensuales',
+                                data: [1200, 1900, 3000, 5000, 2300, 3200],
+                                backgroundColor: '#059669'
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+                    });
+                }
+            },
+
+            handleInput(e) {
+                const t = e.target;
+
+                if (t.matches('#pos-search, #inventory-search')) {
+                    const key = `${t.id.split('-')[0]}SearchTerm`;
+                    this.state[key] = t.value;
+                    const selectionStart = t.selectionStart;
+                    const selectionEnd = t.selectionEnd;
+                    this.render();
+                    const newT = document.getElementById(t.id);
+                    if (newT) {
+                        newT.focus();
+                        newT.setSelectionRange(selectionStart, selectionEnd);
+                    }
+                }
+
+                if (t.id === 'physical-cash-input') {
+                    const systemTotal = parseFloat(t.dataset.systemTotal);
+                    const physical = parseFloat(t.value) || 0;
+                    const diff = physical - systemTotal;
+                    const el = document.getElementById('discrepancy-display');
+                    if (el) {
+                        el.textContent = this.utils.formatCurrency(diff);
+                        el.className = 'font-bold text-lg';
+                        if (diff < 0) el.classList.add('text-red-600');
+                        else if (diff > 0) el.classList.add('text-yellow-600');
+                        else el.classList.add('text-green-600');
+                    }
+                }
+            },
+
+            handleChange(e) {
+                const target = e.target;
+
+                if (target.matches('[name="hasCredit"]')) {
+                    const container = target.closest('form')?.querySelector('.credit-details');
+                    if (container) container.classList.toggle('hidden', !target.checked);
+                }
+
+                if (target.matches('[name="paymentMethod"]')) {
+                    const form = target.closest('form');
+                    if (form) {
+                        const clientSelector = form.querySelector('#clientSelectorContainer');
+                        if (clientSelector) {
+                            clientSelector.classList.toggle('hidden', target.value !== 'Credito');
+                        }
+                    }
+                }
+            },
+
+            handleAction(e) {
+                const target = e.target.closest('[data-action]');
+                if (!target) return;
+                e.preventDefault();
+
+                const { action, id, type, category, section, name } = target.dataset;
+                const itemId = id ? parseInt(id) : null;
+
+                const actions = {
+                    toggleSidebar: () => this.toggleSidebar(),
+                    navigateTo: () => {
+                        this.navigateTo(section);
+                    },
+                    showProductModal: () => this.modals.product(itemId),
+                    showClientModal: () => this.modals.client(itemId),
+                    showSupplierModal: () => this.modals.supplier(itemId),
+                    showPurchaseModal: () => this.modals.purchase(),
+                    showQuoteModal: () => this.modals.quote(itemId),
+                    showPaymentModal: () => this.modals.payment(itemId, type),
+                    showBranchModal: () => this.modals.branch(itemId),
+                    showUserModal: () => this.modals.user(itemId),
+                    showSaleDetailModal: () => this.modals.saleDetail(itemId),
+                    closeModal: () => this.utils.closeModal(),
+                    deleteItem: () => this.utils.confirmDelete(type, itemId),
+                    deleteItemConfirmed: () => { this.crud.delete(type + 's', itemId); this.utils.closeModal(); },
+                    addToCart: () => this.pos.addToCart(itemId),
+                    removeFromCart: () => this.pos.removeFromCart(itemId),
+                    updateCartQuantity: () => {
+                        const input = e.target.closest('div').querySelector('input');
+                        this.pos.updateCartQuantity(itemId, parseInt(input.value));
+                    },
+                    filterPosCategory: () => { this.state.posCategoryFilter = category; this.render(); },
+                    filterInventoryCategory: () => { this.state.inventoryCategoryFilter = category; this.render(); },
+                    downloadPdfReport: () => this.reports.downloadPdf(),
+                    downloadExcelReport: () => this.reports.downloadExcel(),
+                    generateDescription: () => this.gemini.generateDescription(),
+                    analyzePerformance: () => this.gemini.analyzePerformance(),
+                    getProductInfo: () => this.gemini.getProductInfo(itemId, name),
+                    logout: () => this.handleLogout(),
+                };
+
+                if (actions[action]) actions[action]();
+            },
+
+            handleFormSubmit(e) {
+                e.preventDefault();
+                const form = e.target;
+                if (form.id === 'login-form') return;
+
+                const data = Object.fromEntries(new FormData(form));
+                const id = data.id ? parseInt(data.id) : null;
+
+                const forms = {
+                    'product-form': () => {
+                        const payload = {
+                            name: data.name.trim(),
+                            type: data.type,
+                            description: (data.description || '').trim(),
+                            quantity: parseInt(data.quantity || '0'),
+                            minStock: parseInt(data.minStock || '0'),
+                            price: parseFloat(data.price || '0')
+                        };
+                        if ([payload.quantity, payload.minStock, payload.price].some(v => isNaN(v))) {
+                            return this.utils.showNotification('Verifica cantidad, precio y stock mínimo.', 'error');
+                        }
+                        this.crud.save('products', payload, id);
+                    },
+
+                    'client-form': () => {
+                        const hasCredit = form.querySelector('[name="hasCredit"]').checked;
+                        const payload = {
+                            name: data.name.trim(),
+                            phone: (data.phone || '').trim(),
+                            email: (data.email || '').trim(),
+                            hasCredit,
+                            creditLimit: hasCredit ? parseFloat(data.creditLimit || '0') : 0,
+                            creditUsed: this.state.clients.find(c => c.id === id)?.creditUsed || 0,
+                            creditCutoffDate: hasCredit ? data.creditCutoffDate : null,
+                            creditPaymentDate: hasCredit ? data.creditPaymentDate : null,
+                            branchId: this.state.currentBranchId,
+                        };
+                        this.crud.save('clients', payload, id);
+                    },
+
+                    'supplier-form': () => {
+                        const hasCredit = form.querySelector('[name="hasCredit"]').checked;
+                        const payload = {
+                            name: data.name.trim(),
+                            contact: (data.contact || '').trim(),
+                            phone: (data.phone || '').trim(),
+                            hasCredit,
+                            creditLimit: hasCredit ? parseFloat(data.creditLimit || '0') : 0,
+                            creditUsed: this.state.suppliers.find(s => s.id === id)?.creditUsed || 0,
+                            creditCutoffDate: hasCredit ? data.creditCutoffDate : null,
+                            creditPaymentDate: hasCredit ? data.creditPaymentDate : null,
+                            branchId: this.state.currentBranchId,
+                        };
+                        this.crud.save('suppliers', payload, id);
+                    },
+
+                    'payment-form': () => this.crud.handlePayment(data),
+
+                    'purchase-form': () => this.crud.handlePurchase(data),
+
+                    'quote-form': () => this.crud.save('quotes', {
+                        supplierId: parseInt(data.supplierId),
+                        productName: data.productName,
+                        cost: parseFloat(data.cost || '0'),
+                        quantity: parseInt(data.quantity),
+                        status: 'Pendiente',
+                        date: new Date().toISOString(),
+                        branchId: this.state.currentBranchId,
+                    }, id),
+
+                    'pos-form': () => this.pos.completeSale(data.paymentMethod, parseInt(data.clientId)),
+
+                    'cash-reconciliation-form': () => this.cash.performReconciliation(data),
+
+                    'transfer-form': () => this.transfers.performTransfer(data),
+
+                    'branch-form': () => {
+                        this.crud.save('branches', { name: data.name }, id, false);
+                        this.populateBranchSelector();
+                    },
+
+                    'user-form': () => this.crud.save('users', {
+                        name: data.name,
+                        username: data.username,
+                        password: data.password,
+                        branchId: parseInt(data.branchId),
+                        role: data.role
+                    }, id, false),
+                };
+
+                if (forms[form.id]) {
+                    forms[form.id]();
+                    this.logActivity(`Formulario '${form.id}' enviado.`);
+                    this.utils.closeModal();
+                    this.render();
+                }
+            },
+
+            gemini: {
+                async generateText(prompt, useGrounding = false) {
+                    const apiKey = ""; // Canvas inyectará la clave de API en runtime
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    const payload = { contents: [{ parts: [{ text: prompt }] }] };
+                    if (useGrounding) payload.tools = [{ google_search: {} }];
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!response.ok) throw new Error(`Error de API: ${response.statusText}`);
+                        const result = await response.json();
+                        return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    } catch (error) {
+                        console.error("Error al llamar a la API de Gemini:", error);
+                        app.utils.showNotification("Error al contactar la IA. Intenta de nuevo.", 'error');
+                        return null;
+                    }
+                },
+
+                async generateDescription() {
+                    const nameInput = document.querySelector('form#product-form input[name="name"]');
+                    const typeInput = document.querySelector('form#product-form select[name="type"]');
+                    const descTextarea = document.querySelector('form#product-form textarea[name="description"]');
+                    if (!nameInput?.value || !typeInput?.value) return app.utils.showNotification('Ingresa nombre y tipo del producto.', 'error');
+
+                    const prompt = `Actúa como un experto en agronomía. Genera una descripción de producto concisa y profesional (2-3 frases) para un catálogo de ventas. El producto es '${nameInput.value}', un tipo de '${typeInput.value}'. La descripción debe ser clara, atractiva y destacar su propósito o beneficio principal.`;
+                    descTextarea.value = "Generando descripción con IA...";
+                    const generatedText = await this.generateText(prompt);
+                    descTextarea.value = generatedText ? generatedText.trim() : "No se pudo generar la descripción.";
+                },
+
+                async analyzePerformance() {
+                    const resultContainer = document.getElementById('ai-analysis-result');
+                    if (!resultContainer) return;
+
+                    resultContainer.innerHTML = `<div class="flex items-center justify-center p-4"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="ml-3">Analizando datos de la sucursal...</p></div>`;
+
+                    const branchName = app.state.branches.find(b => b.id === app.state.currentBranchId)?.name || '';
+                    const branchSales = app.state.sales.filter(s => s.branchId === app.state.currentBranchId);
+                    const branchProducts = app.state.products.filter(p => p.branchId === app.state.currentBranchId);
+
+                    if (branchSales.length === 0) {
+                        resultContainer.innerHTML = `<p class="text-center text-gray-500 p-4">No hay suficientes datos de ventas para un análisis.</p>`;
+                        return;
+                    }
+
+                    const salesSummary = branchSales.slice(0, 10).map(s => `- Venta de ${s.items.length} productos por ${app.utils.formatCurrency(s.total)}`).join('\n');
+                    const productsSummary = branchProducts.map(p => `- ${p.name}: ${p.quantity} en stock (mínimo ${p.minStock})`).join('\n');
+                    const prompt = `Eres un analista de negocios para "Agronare" en la sucursal de ${branchName}. Analiza los siguientes datos de ventas e inventario y genera un resumen conciso con 3 puntos clave (usa asteriscos *). Identifica: 1. El producto con mejor desempeño o más vendido. 2. Un producto con bajo stock que necesite reabastecimiento urgente. 3. Una recomendación estratégica simple (ej. promocionar un producto de lento movimiento, sugerir un combo, etc.).
+DATOS DE VENTAS RECIENTES:
+${salesSummary}
+DATOS DE INVENTARIO:
+${productsSummary}`;
+
+                    const analysisText = await this.generateText(prompt);
+                    if (analysisText) {
+                        const formattedHtml = analysisText
+                            .split('*')
+                            .filter(item => item.trim() !== '')
+                            .map(item => `<li class="flex items-start mb-2"><i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i><span>${item.trim()}</span></li>`)
+                            .join('');
+                        resultContainer.innerHTML = `<ul class="text-gray-700">${formattedHtml}</ul>`;
+                    } else {
+                        resultContainer.innerHTML = `<p class="text-center text-red-500 p-4">No se pudo generar el análisis en este momento.</p>`;
+                    }
+                },
+
+                async getProductInfo(productId, productName) {
+                    app.utils.renderModal(
+                        `✨ Información de ${productName}`,
+                        `<div id="ai-product-info" class="p-4 text-center"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p>Buscando información actualizada...</p></div>`
+                    );
+
+                    const prompt = `Actúa como un experto vendedor de productos agrícolas para Agronare. Proporciona un resumen de los usos principales, beneficios clave y una razón convincente para comprar el producto "${productName}". Utiliza información actualizada de la web para fundamentar tu respuesta. Sé conciso y directo.`;
+                    const result = await this.generateText(prompt, true);
+
+                    const container = document.getElementById('ai-product-info');
+                    if (container) {
+                        container.innerHTML = result
+                            ? `<p class="text-gray-700 text-left whitespace-pre-wrap">${result}</p>`
+                            : `<p class="text-red-500">No se pudo obtener la información en este momento.</p>`;
+                    }
+                }
+            },
+
+            crud: {
+                _getNewId(col) { return col.length > 0 ? Math.max(...col.map(i => i.id)) + 1 : 1; },
+
+                create(collectionName, itemData, assignBranch = true) {
+                    const collection = app.state[collectionName];
+                    const newItem = { id: this._getNewId(collection), ...itemData };
+                    if (assignBranch && (newItem.branchId === null || newItem.branchId === undefined)) {
+                        newItem.branchId = app.state.currentBranchId;
+                    }
+                    collection.push(newItem);
+
+                    app.undo.set(() => {
+                        const idx = collection.findIndex(x => x.id === newItem.id);
+                        if (idx > -1) collection.splice(idx, 1);
+                        app.persistState();
+                        app.render();
+                    }, `Crear ${collectionName.slice(0, -1)}`);
+
+                    app.utils.showNotification(`${collectionName.slice(0, -1)} creado.`, 'success', () => {
+                        app.undo.last?.do();
+                        app.undo.clear();
+                    });
+
+                    app.persistState();
+                    return newItem;
+                },
+
+                save(collectionName, itemData, itemId, assignBranch = true) {
+                    if (itemId) {
+                        const col = app.state[collectionName];
+                        const i = col.findIndex(x => x.id === itemId);
+                        if (i > -1) {
+                            const prev = { ...col[i] };
+                            col[i] = { ...col[i], ...itemData };
+
+                            app.undo.set(() => {
+                                col[i] = prev;
+                                app.persistState();
+                                app.render();
+                            }, `Actualizar ${collectionName.slice(0, -1)}`);
+
+                            app.utils.showNotification(`${collectionName.slice(0, -1)} actualizado.`, 'success', () => {
+                                app.undo.last?.do();
+                                app.undo.clear();
+                            });
+
+                            app.persistState();
+                        }
+                    } else {
+                        this.create(collectionName, itemData, assignBranch);
+                    }
+                },
+
+                delete(collectionName, itemId) {
+                    const col = app.state[collectionName];
+                    const idx = col.findIndex(x => x.id === itemId);
+                    if (idx > -1) {
+                        const removed = col.splice(idx, 1)[0];
+
+                        app.undo.set(() => {
+                            col.splice(idx, 0, removed);
+                            app.persistState();
+                            app.render();
+                        }, `Eliminar ${collectionName.slice(0, -1)}`);
+
+                        app.utils.showNotification(`${removed.name || 'Elemento'} eliminado.`, 'success', () => {
+                            app.undo.last?.do();
+                            app.undo.clear();
+                        });
+
+                        app.logActivity(`Eliminó ${collectionName.slice(0, -1)}: ${removed.name || removed.id}`);
+                        app.persistState();
+                        app.render();
+                    }
+                },
+
+                handlePurchase(data) {
+                    const supplierId = parseInt(data.supplierId),
+                        productId = parseInt(data.productId),
+                        qty = parseInt(data.quantity),
+                        cost = parseFloat(data.cost);
+
+                    if (![supplierId, productId, qty, cost].every(v => !isNaN(v) && v > 0)) {
+                        return app.utils.showNotification('Completa correctamente la compra.', 'error');
+                    }
+
+                    const prod = app.state.products.find(p => p.id === productId);
+                    if (prod) {
+                        const prevQty = prod.quantity;
+                        prod.quantity += qty;
+
+                        const purchase = app.crud.create('purchases', {
+                            supplierId,
+                            productId,
+                            quantity: qty,
+                            cost,
+                            date: new Date().toISOString(),
+                            branchId: app.state.currentBranchId,
+                        });
+
+                        app.undo.set(() => {
+                            prod.quantity = prevQty;
+                            const i = app.state.purchases.findIndex(x => x.id === purchase.id);
+                            if (i > -1) app.state.purchases.splice(i, 1);
+                            app.persistState();
+                            app.render();
+                        }, 'Registrar compra');
+
+                        app.logActivity(`Compra de ${qty} x ${prod.name}`);
+                        app.utils.showNotification('Compra registrada.', 'success', () => {
+                            app.undo.last?.do();
+                            app.undo.clear();
+                        });
+
+                        app.persistState();
+                    }
+                },
+
+                handlePayment(data) {
+                    const amount = parseFloat(data.amount);
+                    const entityId = parseInt(data.entityId);
+                    const type = data.type; // 'client' | 'supplier'
+
+                    if (isNaN(amount) || amount <= 0 || !entityId) {
+                        return app.utils.showNotification('Datos de abono inválidos.', 'error');
+                    }
+
+                    const collection = type === 'client' ? app.state.clients : app.state.suppliers;
+                    const entity = collection.find(e => e.id === entityId);
+
+                    if (entity && entity.hasCredit) {
+                        const prevUsed = entity.creditUsed;
+                        entity.creditUsed -= amount;
+                        if (entity.creditUsed < 0) entity.creditUsed = 0;
+
+                        const payment = this.create('payments', {
+                            type,
+                            entityId,
+                            entityName: entity.name,
+                            amount,
+                            date: new Date().toISOString(),
+                            dueDate: data.dueDate || null,
+                        });
+
+                        app.undo.set(() => {
+                            entity.creditUsed = prevUsed;
+                            const i = app.state.payments.findIndex(p => p.id === payment.id);
+                            if (i > -1) app.state.payments.splice(i, 1);
+                            app.persistState();
+                            app.render();
+                        }, 'Registrar abono');
+
+                        app.utils.showNotification(`Abono de ${app.utils.formatCurrency(amount)} registrado para ${entity.name}.`, 'success', () => {
+                            app.undo.last?.do();
+                            app.undo.clear();
+                        });
+
+                        app.persistState();
+                    } else {
+                        app.utils.showNotification(`No se encontró o no tiene crédito: ${type}.`, 'error');
+                    }
+                }
+            },
+
+            pos: {
+                addToCart(productId) {
+                    const p = app.state.products.find(x => x.id === productId);
+                    if (!p) return;
+                    if (p.quantity <= 0) return app.utils.showNotification('Producto sin stock.', 'error');
+
+                    const item = app.state.cart.find(i => i.id === productId);
+                    const next = (item?.quantity || 0) + 1;
+
+                    if (next > p.quantity) return app.utils.showNotification('No hay más stock disponible.', 'error');
+                    if (p.quantity - next < p.minStock) {
+                        app.utils.showNotification(`Aviso: "${p.name}" quedará en stock bajo (${p.quantity - next}).`, 'warn');
+                    }
+
+                    if (item) item.quantity++;
+                    else app.state.cart.push({ ...p, quantity: 1 });
+
+                    app.render();
+                },
+
+                removeFromCart(id) {
+                    app.state.cart = app.state.cart.filter(i => i.id !== id);
+                    app.render();
+                },
+
+                updateCartQuantity(id, newQty) {
+                    const item = app.state.cart.find(i => i.id === id);
+                    const p = app.state.products.find(x => x.id === id);
+                    if (!item || !p) return;
+
+                    if (newQty <= 0) { this.removeFromCart(id); return; }
+                    if (newQty > p.quantity) {
+                        item.quantity = p.quantity;
+                        app.render();
+                        return app.utils.showNotification('Cantidad máxima de stock alcanzada.', 'error');
+                    }
+                    if (p.quantity - newQty < p.minStock) {
+                        app.utils.showNotification(`Aviso: "${p.name}" quedará en stock bajo (${p.quantity - newQty}).`, 'warn');
+                    }
+
+                    item.quantity = newQty;
+                    app.render();
+                },
+
+                calculateTotal() {
+                    return app.state.cart.reduce((t, i) => t + (i.price * i.quantity), 0);
+                },
+
+                completeSale(paymentMethod, clientId) {
+                    if (app.state.cart.length === 0) return app.utils.showNotification('El carrito está vacío.', 'error');
+                    if (paymentMethod === 'Credito' && !clientId) return app.utils.showNotification('Seleccione un cliente para venta a crédito.', 'error');
+
+                    const client = app.state.clients.find(c => c.id === clientId);
+                    const total = this.calculateTotal();
+
+                    if (paymentMethod === 'Credito') {
+                        if (!client?.hasCredit) return app.utils.showNotification('Este cliente no tiene crédito activo.', 'error');
+                        if ((client.creditUsed + total) > client.creditLimit) {
+                            return app.utils.showNotification(`Límite de crédito excedido. Disponible: ${app.utils.formatCurrency(client.creditLimit - client.creditUsed)}`, 'error');
+                        }
+                    }
+
+                    let clientName = 'Mostrador';
+                    const before = app.state.products.map(p => ({ id: p.id, quantity: p.quantity }));
+
+                    app.state.cart.forEach(ci => {
+                        const p = app.state.products.find(x => x.id === ci.id);
+                        if (p) p.quantity -= ci.quantity;
+                    });
+
+                    if (paymentMethod === 'Credito' && client) {
+                        client.creditUsed += total;
+                        clientName = client.name;
+                    }
+
+                    const sale = app.crud.create('sales', {
+                        items: [...app.state.cart],
+                        total,
+                        paymentMethod,
+                        clientId: paymentMethod === 'Credito' ? clientId : null,
+                        clientName,
+                        date: new Date().toISOString(),
+                        branchId: app.state.currentBranchId,
+                    });
+
+                    // Avisos de stock bajo post venta
+                    app.state.cart.forEach(ci => {
+                        const p = app.state.products.find(x => x.id === ci.id);
+                        if (p && p.quantity < p.minStock) {
+                            app.utils.showNotification(`Stock bajo: "${p.name}" quedó en ${p.quantity}.`, 'warn');
+                        }
+                    });
+
+                    app.undo.set(() => {
+                        before.forEach(prev => {
+                            const p = app.state.products.find(x => x.id === prev.id);
+                            if (p) p.quantity = prev.quantity;
+                        });
+                        if (paymentMethod === 'Credito' && clientId) {
+                            const c = app.state.clients.find(x => x.id === clientId);
+                            if (c) c.creditUsed -= total;
+                        }
+                        const i = app.state.sales.findIndex(s => s.id === sale.id);
+                        if (i > -1) app.state.sales.splice(i, 1);
+                        app.persistState();
+                        app.render();
+                    }, 'Completar venta');
+
+                    app.logActivity(`Venta de ${app.utils.formatCurrency(total)} a ${clientName}`);
+                    app.state.cart = [];
+                    app.persistState();
+
+                    app.utils.showNotification('¡Venta completada!', 'success', () => {
+                        app.undo.last?.do();
+                        app.undo.clear();
+                    });
+
+                    app.navigateTo('pos');
+                }
+            },
+
+            cash: {
+                getUnreconciledSales() {
+                    const set = new Set(app.state.cashReconciliations.flatMap(r => r.salesCovered || []));
+                    return app.state.sales.filter(s => s.branchId === app.state.currentBranchId && s.paymentMethod === 'Contado' && !set.has(s.id));
+                },
+
+                calculateSystemTotal() {
+                    return this.getUnreconciledSales().reduce((s, v) => s + v.total, 0);
+                },
+
+                performReconciliation(data) {
+                    const physical = parseFloat(data.physicalCash);
+                    if (isNaN(physical)) return app.utils.showNotification('El monto en efectivo no es válido.', 'error');
+
+                    const unreconciled = this.getUnreconciledSales();
+                    const system = this.calculateSystemTotal();
+                    const discrepancy = physical - system;
+                    const covered = unreconciled.map(s => s.id);
+
+                    const rec = app.crud.create('cashReconciliations', {
+                        date: new Date().toISOString(),
+                        systemTotalCash: system,
+                        physicalCashCount: physical,
+                        discrepancy,
+                        notes: data.notes || '',
+                        salesCovered: covered,
+                        branchId: app.state.currentBranchId,
+                    });
+
+                    app.undo.set(() => {
+                        const i = app.state.cashReconciliations.findIndex(r => r.id === rec.id);
+                        if (i > -1) app.state.cashReconciliations.splice(i, 1);
+                        app.persistState();
+                        app.render();
+                    }, 'Corte de caja');
+
+                    app.logActivity(`Corte de caja con discrepancia de ${app.utils.formatCurrency(discrepancy)}`);
+                    app.utils.showNotification('Corte de caja finalizado.', 'success', () => {
+                        app.undo.last?.do();
+                        app.undo.clear();
+                    });
+                }
+            },
+
+            transfers: {
+                performTransfer(data) {
+                    const toBranchId = parseInt(data.toBranchId);
+                    const productId = parseInt(data.productId);
+                    const quantity = parseInt(data.quantity);
+
+                    if (isNaN(toBranchId) || isNaN(productId) || isNaN(quantity) || quantity <= 0) {
+                        return app.utils.showNotification('Datos de transferencia inválidos.', 'error');
+                    }
+
+                    const fromBranchId = app.state.currentBranchId;
+                    const originProduct = app.state.products.find(p => p.branchId === fromBranchId && p.id === productId);
+
+                    if (!originProduct || originProduct.quantity < quantity) {
+                        return app.utils.showNotification('Stock insuficiente en la sucursal de origen.', 'error');
+                    }
+
+                    const prevOriginQty = originProduct.quantity;
+                    originProduct.quantity -= quantity;
+
+                    let destProduct = app.state.products.find(p => p.branchId === toBranchId && p.name.toLowerCase() === originProduct.name.toLowerCase());
+                    let prevDestQty = null;
+
+                    if (destProduct) {
+                        prevDestQty = destProduct.quantity;
+                        destProduct.quantity += quantity;
+                    } else {
+                        const newProductData = { ...originProduct, branchId: toBranchId, quantity };
+                        delete newProductData.id;
+                        destProduct = app.crud.create('products', newProductData);
+                    }
+
+                    const transfer = app.crud.create('transfers', {
+                        date: new Date().toISOString(),
+                        fromBranchId,
+                        toBranchId,
+                        productId: originProduct.id,
+                        productName: originProduct.name,
+                        quantity,
+                    }, null, false);
+
+                    app.undo.set(() => {
+                        originProduct.quantity = prevOriginQty;
+                        if (prevDestQty !== null) {
+                            destProduct.quantity = prevDestQty;
+                        } else {
+                            const idx = app.state.products.findIndex(p => p.id === destProduct.id);
+                            if (idx > -1) app.state.products.splice(idx, 1);
+                        }
+                        const tIdx = app.state.transfers.findIndex(t => t.id === transfer.id);
+                        if (tIdx > -1) app.state.transfers.splice(tIdx, 1);
+
+                        app.persistState();
+                        app.render();
+                    }, 'Realizar transferencia');
+
+                    app.utils.showNotification(`Transferencia de ${quantity}x ${originProduct.name} realizada.`, 'success', () => {
+                        app.undo.last?.do();
+                        app.undo.clear();
+                    });
+
+                    app.logActivity(`Transfirió ${quantity}x ${originProduct.name} a ${app.state.branches.find(b => b.id === toBranchId).name}`);
+                    app.persistState();
+                }
+            },
+
+            reports: {
+                downloadPdf() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    const branch = app.state.branches.find(b => b.id === app.state.currentBranchId);
+                    const sales = app.state.sales.filter(s => s.branchId === app.state.currentBranchId);
+                    const purchases = app.state.purchases.filter(p => p.branchId === app.state.currentBranchId);
+
+                    doc.setFontSize(18);
+                    doc.text(`Reporte de Operaciones - Agronare`, 14, 22);
+                    doc.setFontSize(12);
+                    doc.text(`Sucursal: ${branch.name}`, 14, 30);
+                    doc.text(`Fecha: ${new Date().toLocaleDateString('es-MX')}`, 14, 36);
+
+                    doc.setFontSize(14);
+                    doc.text('Ventas', 14, 45);
+                    const salesData = sales.map(s => [
+                        app.utils.formatDateTime(s.date),
+                        s.clientName,
+                        s.items.map(i => `${i.quantity}x ${i.name}`).join(', '),
+                        s.paymentMethod,
+                        app.utils.formatCurrency(s.total)
+                    ]);
+                    const totalSales = sales.reduce((sum, s) => sum + s.total, 0);
+
+                    doc.autoTable({
+                        head: [['Fecha', 'Cliente', 'Productos', 'Pago', 'Total']],
+                        body: salesData,
+                        startY: 50,
+                        headStyles: { fillColor: [22, 101, 52] },
+                        foot: [['', '', '', 'TOTAL', app.utils.formatCurrency(totalSales)]],
+                        footStyles: { fontStyle: 'bold' }
+                    });
+
+                    const finalY = doc.autoTable.previous.finalY;
+                    doc.setFontSize(14);
+                    doc.text('Compras', 14, finalY + 15);
+                    const purchasesData = purchases.map(p => [
+                        app.utils.formatDateTime(p.date),
+                        app.state.products.find(pr => pr.id === p.productId)?.name || 'N/A',
+                        p.quantity,
+                        app.utils.formatCurrency(p.cost)
+                    ]);
+                    const totalPurchases = purchases.reduce((s, p) => s + p.cost, 0);
+
+                    doc.autoTable({
+                        head: [['Fecha', 'Producto', 'Cantidad', 'Costo Total']],
+                        body: purchasesData,
+                        startY: finalY + 20,
+                        headStyles: { fillColor: [22, 101, 52] },
+                        foot: [['', '', 'TOTAL GASTOS', app.utils.formatCurrency(totalPurchases)]],
+                        footStyles: { fontStyle: 'bold' }
+                    });
+
+                    doc.save(`Reporte_Agronare_${branch.name.replace(' ', '_')}_${new Date().toISOString().slice(0, 10)}.pdf`);
+                    app.utils.showNotification('Reporte PDF generado.', 'info');
+                },
+
+                downloadExcel() {
+                    const branch = app.state.branches.find(b => b.id === app.state.currentBranchId);
+                    const sales = app.state.sales.filter(s => s.branchId === app.state.currentBranchId);
+                    const purchases = app.state.purchases.filter(p => p.branchId === app.state.currentBranchId);
+                    const inventory = app.state.products.filter(p => p.branchId === app.state.currentBranchId);
+
+                    const salesData = sales.flatMap(s => s.items.map(i => ({
+                        'ID Venta': s.id,
+                        'Fecha': app.utils.formatDateTime(s.date),
+                        'Cliente': s.clientName,
+                        'Método de Pago': s.paymentMethod,
+                        'ID Producto': i.id,
+                        'Producto': i.name,
+                        'Categoría': i.type,
+                        'Cantidad': i.quantity,
+                        'Precio Unitario': i.price,
+                        'Subtotal': i.price * i.quantity
+                    })));
+
+                    const purchasesData = purchases.map(p => ({
+                        'ID Compra': p.id,
+                        'Fecha': app.utils.formatDateTime(p.date),
+                        'Proveedor': app.state.suppliers.find(s => s.id === p.supplierId)?.name || 'N/A',
+                        'Producto': app.state.products.find(pr => pr.id === p.productId)?.name || 'N/A',
+                        'Cantidad': p.quantity,
+                        'Costo Total': p.cost
+                    }));
+
+                    const inventoryData = inventory.map(p => ({
+                        'ID Producto': p.id,
+                        'Nombre': p.name,
+                        'Categoría': p.type,
+                        'Stock Actual': p.quantity,
+                        'Stock Mínimo': p.minStock,
+                        'Precio Venta': p.price,
+                        'Valor Inventario': p.quantity * p.price,
+                    }));
+
+                    const wb = XLSX.utils.book_new();
+                    const wsSales = XLSX.utils.json_to_sheet(salesData);
+                    const wsPurchases = XLSX.utils.json_to_sheet(purchasesData);
+                    const wsInventory = XLSX.utils.json_to_sheet(inventoryData);
+
+                    XLSX.utils.book_append_sheet(wb, wsSales, "Ventas");
+                    XLSX.utils.book_append_sheet(wb, wsPurchases, "Compras");
+                    XLSX.utils.book_append_sheet(wb, wsInventory, "Inventario");
+
+                    XLSX.writeFile(wb, `Reporte_Agronare_${branch.name.replace(' ', '_')}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+                    app.utils.showNotification('Reporte Excel generado.', 'info');
+                }
+            },
+
+            utils: {
+                formatCurrency: (a) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(a),
+                formatDateTime: (s) => new Date(s).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }),
+
+                showNotification(message, type = 'success', undoCallback = null) {
+                    const n = document.createElement('div');
+                    const t = (type === 'warn' ? 'notification-warning' : `notification-${type}`);
+                    n.className = `notification ${t}`;
+                    n.innerHTML = `<span>${message}</span>${undoCallback ? '<button class="undo-btn" title="Deshacer" aria-label="Deshacer">Deshacer</button>' : ''}`;
+
+                    const c = app.dom.notificationContainer;
+                    c.appendChild(n);
+
+                    if (undoCallback) {
+                        n.querySelector('.undo-btn').addEventListener('click', () => {
+                            undoCallback();
+                            n.remove();
+                        });
+                    }
+
+                    setTimeout(() => {
+                        n.classList.add('fade-out');
+                        setTimeout(() => n.remove(), 3500);
+                    }, 3500);
+                },
+
+                closeModal() { app.dom.modalContainer.innerHTML = ''; },
+
+                confirmDelete(type, id) {
+                    const col = type + 's';
+                    const item = app.state[col].find(i => i.id === id);
+                    if (!item) return;
+                    if (type === 'branch' && app.state.users.some(u => u.branchId === id)) {
+                        return app.utils.showNotification('No se puede eliminar. Hay usuarios asignados a esta sucursal.', 'error');
+                    }
+
+                    this.renderModal(
+                        `Confirmar Eliminación`,
+                        `<p>¿Estás seguro de que quieres eliminar <strong>"${item.name}"</strong>? Esta acción no se puede deshacer.</p>
+                          <div class="pt-6 flex justify-end space-x-3">
+                            <button type="button" data-action="closeModal" class="btn-secondary">Cancelar</button>
+                            <button type="button" data-action="deleteItemConfirmed" data-type="${type}" data-id="${id}" class="btn-danger">Eliminar</button>
+                          </div>`
+                    );
+                },
+
+                renderModal(title, content) {
+                    app.dom.modalContainer.innerHTML = `
+                    <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+                      <div class="modal-content" role="document">
+                        <div class="flex justify-between items-center pb-4 border-b">
+                          <h3 id="modal-title" class="text-xl font-bold text-gray-800">${title}</h3>
+                          <button data-action="closeModal" class="text-gray-400 hover:text-gray-600 text-3xl leading-none" aria-label="Cerrar modal" title="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="pt-6">${content}</div>
+                      </div>
+                    </div>`;
+                }
+            },
+
+            logActivity(text) {
+                this.state.activities.unshift({ text, time: new Date() });
+                if (this.state.activities.length > 20) this.state.activities.pop();
+                this.persistState();
+            },
+
+            templates: {
+                dashboard(state) {
+                    const branchSales = state.sales.filter(s => s.branchId === state.currentBranchId);
+                    const branchClients = state.clients.filter(c => c.branchId === state.currentBranchId);
+                    const branchProducts = state.products.filter(p => p.branchId === state.currentBranchId);
+                    const totalSales = branchSales.reduce((sum, s) => sum + s.total, 0);
+                    const totalCredit = branchClients.reduce((sum, c) => sum + (c.creditUsed || 0), 0);
+                    const inventoryValue = branchProducts.reduce((sum, p) => sum + (p.quantity * p.price), 0);
+
+                    return `
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-800">Bienvenido al Panel de Control</h1>
+                                <p class="text-gray-600">Aquí puedes gestionar las operaciones de la sucursal.</p>
+                            </div>
+                            <div class="flex space-x-3">
+                                <button data-action="downloadPdfReport" class="bg-white hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-lg shadow-sm border flex items-center" aria-label="Descargar reporte PDF" title="Descargar PDF"><i class="fas fa-file-pdf text-red-500 mr-2" aria-hidden="true"></i>PDF</button>
+                                <button data-action="downloadExcelReport" class="bg-white hover:bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-lg shadow-sm border flex items-center" aria-label="Descargar reporte Excel" title="Descargar Excel"><i class="fas fa-file-excel text-green-600 mr-2" aria-hidden="true"></i>Excel</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                            <div class="card p-5">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Ventas (Sucursal)</p>
+                                        <p class="text-2xl font-bold text-gray-800">${app.utils.formatCurrency(totalSales)}</p>
+                                    </div>
+                                    <div class="bg-emerald-100 p-3 rounded-full">
+                                        <i class="fas fa-dollar-sign text-emerald-600 text-xl" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card p-5">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Cuentas por Cobrar</p>
+                                        <p class="text-2xl font-bold text-gray-800">${app.utils.formatCurrency(totalCredit)}</p>
+                                    </div>
+                                    <div class="bg-amber-100 p-3 rounded-full">
+                                        <i class="fas fa-hand-holding-usd text-amber-600 text-xl" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card p-5">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Valor de Inventario</p>
+                                        <p class="text-2xl font-bold text-gray-800">${app.utils.formatCurrency(inventoryValue)}</p>
+                                    </div>
+                                    <div class="bg-sky-100 p-3 rounded-full">
+                                        <i class="fas fa-boxes text-sky-600 text-xl" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card p-5">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Clientes</p>
+                                        <p class="text-2xl font-bold text-gray-800">${branchClients.length}</p>
+                                    </div>
+                                    <div class="bg-indigo-100 p-3 rounded-full">
+                                        <i class="fas fa-users text-indigo-600 text-xl" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-2 card p-6">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">Rendimiento de Ventas</h3>
+                                <div class="h-80">
+                                    <canvas id="monthlySalesChart" aria-label="Gráfico de ventas mensuales" role="img"></canvas>
+                                </div>
+                            </div>
+                            <div class="card p-6">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">Ventas por Categoría</h3>
+                                <div class="h-80">
+                                    <canvas id="categorySalesChart" aria-label="Gráfico de ventas por categoría" role="img"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card p-6 mt-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-bold text-gray-800">✨ Análisis con IA</h3>
+                                <button data-action="analyzePerformance" class="btn-primary flex items-center" aria-label="Analizar rendimiento con IA" title="Analizar rendimiento">
+                                    <i class="fas fa-brain mr-2" aria-hidden="true"></i>Analizar Rendimiento
+                                </button>
+                            </div>
+                            <div id="ai-analysis-result" class="bg-gray-50 p-4 rounded-lg min-h-[100px]">
+                                <p class="text-center text-gray-500">Presiona el botón para generar un análisis de la sucursal actual.</p>
+                            </div>
+                        </div>`;
+                },
+                inventory(state) {
+                    const branchProducts = state.products.filter(p => p.branchId === state.currentBranchId);
+                    const categories = ['Todos', ...new Set(branchProducts.map(p => p.type))];
+                    const categoryFilters = categories.map(cat => `<button data-action="filterInventoryCategory" data-category="${cat}" class="category-filter px-4 py-2 text-sm font-medium ${state.inventoryCategoryFilter === cat ? 'active' : ''}" aria-pressed="${state.inventoryCategoryFilter === cat}" title="Filtrar por ${cat}">${cat}</button>`).join('');
+                    const filtered = branchProducts.filter(p =>(state.inventoryCategoryFilter === 'Todos' || p.type === state.inventoryCategoryFilter) && p.name.toLowerCase().includes(state.inventorySearchTerm.toLowerCase()));
+                    const productCards = filtered.map(p => {
+                        const low = p.quantity < p.minStock;
+                        const stockColor = low ? 'text-red-600' : 'text-gray-700';
+                        const badge = low ? `<span class="ml-2 text-xs bg-red-100 text-red-700 px-2 py-0-5 rounded-full" aria-label="Stock bajo">Stock bajo</span>` : '';
+                        const typeColors = {'Agroquímico': 'bg-red-100 text-red-800', 'Fertilizante': 'bg-blue-100 text-blue-800', 'Semilla': 'bg-yellow-100 text-yellow-800', 'Otro': 'bg-gray-100 text-gray-800'};
+                        return `<div class="card flex flex-col"><div class="p-5 flex-1"><div class="flex justify-between items-start"><h3 class="text-lg font-bold text-gray-900">${p.name}</h3><span class="text-xs font-semibold px-2-5 py-0-5 rounded-full ${typeColors[p.type] || typeColors['Otro']}">${p.type}</span></div><p class="text-gray-600 mt-2 text-sm h-10 overflow-hidden">${p.description || 'Sin descripción.'}</p><div class="mt-4"><p class="text-sm text-gray-500">Stock mínimo: <b>${p.minStock ?? 0}</b></p></div><div class="mt-2 flex justify-between items-center"><p class="text-xl font-bold text-green-600">${app.utils.formatCurrency(p.price)}</p><p class="text-sm font-semibold ${stockColor}">Stock: ${p.quantity} ${badge}</p></div></div><div class="bg-gray-50 px-5 py-3 flex justify-end space-x-3"><button data-action="showProductModal" data-id="${p.id}" class="text-sm text-blue-600 hover:text-blue-800 font-medium" title="Editar producto ${p.name}">Editar</button><button data-action="deleteItem" data-type="product" data-id="${p.id}" class="text-sm text-red-600 hover:text-red-800 font-medium" title="Eliminar producto ${p.name}">Eliminar</button></div></div>`;
+                    }).join('');
+                    return `<div class="card p-4 mb-6"><div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"><div class="md:col-span-2"><label for="inventory-search" class="sr-only">Buscar producto</label><input id="inventory-search" type="text" placeholder="Buscar producto..." value="${state.inventorySearchTerm}" class="form-input w-full" autocomplete="off" aria-label="Buscar producto"></div><div class="flex justify-end"><button data-action="showProductModal" class="btn-primary w-full md:w-auto flex items-center justify-center" aria-label="Agregar producto" title="Agregar producto"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Agregar Producto</button></div></div><div class="flex flex-wrap gap-2 mt-4 pt-4 border-t" role="toolbar" aria-label="Filtros de inventario">${categoryFilters}</div></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">${filtered.length > 0 ? productCards : '<p class="col-span-full text-center text-gray-500 py-10">No hay productos que coincidan.</p>'}</div>`;
+                },
+                sales(state) {
+                    const branchSales = state.sales.filter(s => s.branchId === state.currentBranchId);
+                    const rows = [...branchSales].reverse().map(s => {
+                        const paymentClass = s.paymentMethod === 'Credito' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+                        return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatDateTime(s.date)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${s.clientName}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${s.items.length}</td><td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${paymentClass}">${s.paymentMethod}</span></td><td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">${app.utils.formatCurrency(s.total)}</td><td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button data-action="showSaleDetailModal" data-id="${s.id}" class="text-indigo-600 hover:text-indigo-900">Ver Detalles</button></td></tr>`;
+                    }).join('');
+                    return `<div class="card overflow-x-auto"><table class="min-w-full divide-y divide-gray-200" aria-label="Historial de ventas"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"># Productos</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pago</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th><th class="relative px-6 py-3"><span class="sr-only">Acciones</span></th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${rows || '<tr><td colspan="6" class="text-center py-10 text-gray-500">No hay ventas registradas en esta sucursal.</td></tr>'}</tbody></table></div>`;
+                },
+                clients(state) {
+                    const list = state.clients.filter(c => c.branchId === state.currentBranchId).map(c => {
+                        const creditAvailable = (c.creditLimit || 0) - (c.creditUsed || 0);
+                        const creditUsage = c.creditLimit ? ((c.creditUsed || 0) / c.creditLimit) * 100 : 0;
+                        let dateClass = 'text-gray-500';
+                        let alertText = '';
+                        if (c.hasCredit && c.creditPaymentDate) {
+                            const now = new Date(); now.setHours(0, 0, 0, 0); const paymentDate = new Date(c.creditPaymentDate);
+                            const diff = (paymentDate - now) / (1000 * 60 * 60 * 24);
+                            if (diff < 0) { dateClass = 'text-red-600 font-bold'; alertText = ' (Vencido)'; } else if (diff <= 7) { dateClass = 'text-yellow-600 font-semibold'; alertText = ' (Próximo)'; }
+                        }
+                        return `<div class="card p-5"><h3 class="text-lg font-bold text-gray-900">${c.name}</h3><p class="text-sm text-gray-500">${c.phone || 'N/A'}</p><p class="text-sm text-gray-500">${c.email || 'N/A'}</p>${c.hasCredit ? `<div class="mt-3 pt-3 border-t"><div class="flex justify-between items-center text-sm"><span class="font-medium text-gray-600">Crédito Usado:</span><span class="font-bold ${c.creditUsed > 0 ? 'text-red-600' : 'text-gray-800'}">${app.utils.formatCurrency(c.creditUsed || 0)}</span></div><div class="w-full bg-gray-200 rounded-full h-2.5 mt-2"><div class="bg-red-500 h-2.5 rounded-full" style="width: ${creditUsage}%"></div></div><div class="flex justify-between items-center text-xs text-gray-500 mt-1"><span>Disp: ${app.utils.formatCurrency(creditAvailable)}</span><span>Límite: ${app.utils.formatCurrency(c.creditLimit)}</span></div><div class="flex justify-between items-center text-xs mt-1"><span class="text-gray-500">Corte: ${c.creditCutoffDate ? new Date(c.creditCutoffDate + 'T00:00:00').toLocaleDateString('es-MX') : 'N/A'}</span><span class="${dateClass}">Pago: ${c.creditPaymentDate ? new Date(c.creditPaymentDate + 'T00:00:00').toLocaleDateString('es-MX') : 'N/A'} ${alertText}</span></div></div>` : '<div class="mt-3 pt-3 border-t text-sm text-gray-500">Sin crédito</div>'}<div class="mt-4 flex justify-end space-x-3">${c.hasCredit ? `<button data-action="showPaymentModal" data-id="${c.id}" data-type="client" class="text-sm text-green-600 hover:text-green-800 font-medium">Abonar</button>` : ''}<button data-action="showClientModal" data-id="${c.id}" class="text-sm text-blue-600 hover:text-blue-800 font-medium" title="Editar cliente ${c.name}">Editar</button><button data-action="deleteItem" data-type="client" data-id="${c.id}" class="text-sm text-red-600 hover:text-red-800 font-medium" title="Eliminar cliente ${c.name}">Eliminar</button></div></div>`;
+                    }).join('');
+                    return `<div class="flex justify-end mb-6"><button data-action="showClientModal" class="btn-primary flex items-center" aria-label="Agregar cliente" title="Agregar cliente"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Agregar Cliente</button></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${list || '<p class="col-span-full text-center text-gray-500">No hay clientes.</p>'}</div>`;
+                },
+                suppliers(state) {
+                    const list = state.suppliers.filter(s => s.branchId === state.currentBranchId).map(s => {
+                        const creditAvailable = (s.creditLimit || 0) - (s.creditUsed || 0);
+                        const creditUsage = s.creditLimit ? ((s.creditUsed || 0) / s.creditLimit) * 100 : 0;
+                        let dateClass = 'text-gray-500'; let alertText = '';
+                        if (s.hasCredit && s.creditPaymentDate) {
+                            const now = new Date(); now.setHours(0, 0, 0, 0); const paymentDate = new Date(s.creditPaymentDate);
+                            const diff = (paymentDate - now) / (1000 * 60 * 60 * 24);
+                            if (diff < 0) { dateClass = 'text-red-600 font-bold'; alertText = ' (Vencido)'; } else if (diff <= 7) { dateClass = 'text-yellow-600 font-semibold'; alertText = ' (Próximo)'; }
+                        }
+                        return `<div class="card p-5"><h3 class="text-lg font-bold text-gray-900">${s.name}</h3><p class="text-sm text-gray-500">Contacto: ${s.contact || 'N/A'}</p><p class="text-sm text-gray-500">Tel: ${s.phone || 'N/A'}</p>${s.hasCredit ? `<div class="mt-3 pt-3 border-t"><div class="flex justify-between items-center text-sm"><span class="font-medium text-gray-600">Crédito Usado:</span><span class="font-bold ${s.creditUsed > 0 ? 'text-red-600' : 'text-gray-800'}">${app.utils.formatCurrency(s.creditUsed || 0)}</span></div><div class="w-full bg-gray-200 rounded-full h-2.5 mt-2"><div class="bg-red-500 h-2.5 rounded-full" style="width: ${creditUsage}%"></div></div><div class="flex justify-between items-center text-xs text-gray-500 mt-1"><span>Disp: ${app.utils.formatCurrency(creditAvailable)}</span><span>Límite: ${app.utils.formatCurrency(s.creditLimit)}</span></div><div class="flex justify-between items-center text-xs mt-1"><span class="text-gray-500">Corte: ${s.creditCutoffDate ? new Date(s.creditCutoffDate + 'T00:00:00').toLocaleDateString('es-MX') : 'N/A'}</span><span class="${dateClass}">Pago: ${s.creditPaymentDate ? new Date(s.creditPaymentDate + 'T00:00:00').toLocaleDateString('es-MX') : 'N/A'} ${alertText}</span></div></div>` : '<div class="mt-3 pt-3 border-t text-sm text-gray-500">Sin crédito</div>'}<div class="mt-4 flex justify-end space-x-3">${s.hasCredit ? `<button data-action="showPaymentModal" data-id="${s.id}" data-type="supplier" class="text-sm text-green-600 hover:text-green-800 font-medium">Abonar</button>` : ''}<button data-action="showSupplierModal" data-id="${s.id}" class="text-sm text-blue-600 hover:text-blue-800 font-medium" title="Editar proveedor ${s.name}">Editar</button><button data-action="deleteItem" data-type="supplier" data-id="${s.id}" class="text-sm text-red-600 hover:text-red-800 font-medium" title="Eliminar proveedor ${s.name}">Eliminar</button></div></div>`;
+                    }).join('');
+                    return `<div class="flex justify-end mb-6"><button data-action="showSupplierModal" class="btn-primary flex items-center" aria-label="Agregar proveedor" title="Agregar proveedor"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Agregar Proveedor</button></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">${list || '<p class="col-span-full text-center text-gray-500">No hay proveedores.</p>'}</div>`;
+                },
+                purchases(state) {
+                    const rows = state.purchases.filter(p => p.branchId === state.currentBranchId).map(p => {
+                        const supplier = state.suppliers.find(s => s.id === p.supplierId)?.name || 'N/A';
+                        const product = state.products.find(pr => pr.id === p.productId)?.name || 'N/A';
+                        return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatDateTime(p.date)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${supplier}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${p.quantity}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatCurrency(p.cost)}</td></tr>`;
+                    }).join('');
+                    return `<div class="flex justify-end mb-6"><button data-action="showPurchaseModal" class="btn-primary flex items-center" aria-label="Registrar compra" title="Registrar compra"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Registrar Compra</button></div><div class="card overflow-x-auto"><table class="min-w-full divide-y divide-gray-200" aria-label="Listado de compras"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Total</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${rows || '<tr><td colspan="5" class="text-center py-4 text-gray-500">No hay compras.</td></tr>'}</tbody></table></div>`;
+                },
+                quotes(state) {
+                    const rows = state.quotes.filter(q => q.branchId === state.currentBranchId).map(q => {
+                        const supplier = state.suppliers.find(s => s.id === q.supplierId)?.name || 'N/A';
+                        return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatDateTime(q.date)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${supplier}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${q.productName}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatCurrency(q.cost || 0)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${q.quantity}</td><td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">${q.status}</span></td></tr>`;
+                    }).join('');
+                    return `<div class="flex justify-end mb-6"><button data-action="showQuoteModal" class="btn-primary flex items-center" aria-label="Nueva cotización" title="Nueva cotización"><i class="fas fa-plus mr-2" aria-hidden="true"></i>Nueva Cotización</button></div><div class="card overflow-x-auto"><table class="min-w-full divide-y divide-gray-200" aria-label="Listado de cotizaciones"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${rows || '<tr><td colspan="6" class="text-center py-4 text-gray-500">No hay cotizaciones.</td></tr>'}</tbody></table></div>`;
+                },
+                payments(state) {
+                    const branchPayments = state.payments.filter(p => { const entityList = p.type === 'client' ? state.clients : state.suppliers; const entity = entityList.find(e => e.id === p.entityId); return entity && entity.branchId === state.currentBranchId; });
+                    const now = new Date();
+                    const upcomingPayments = branchPayments.filter(p => p.dueDate && new Date(p.dueDate) > now && (new Date(p.dueDate) - now) / (1000 * 60 * 60 * 24) <= 7).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+                    const overduePayments = branchPayments.filter(p => p.dueDate && new Date(p.dueDate) <= now);
+                    const renderPaymentRow = (p) => {
+                        const dueDate = p.dueDate ? new Date(p.dueDate) : null;
+                        let dateClass = '';
+                        if (dueDate) { const diff = (dueDate - now) / (1000 * 60 * 60 * 24); if (diff < 0) dateClass = 'text-red-500 font-bold'; else if (diff <= 7) dateClass = 'text-yellow-600'; }
+                        return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatDateTime(p.date)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${p.entityName}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${p.type === 'client' ? 'Abono de Cliente' : 'Abono a Proveedor'}</td><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">${app.utils.formatCurrency(p.amount)}</td><td class="px-6 py-4 whitespace-nowrap text-sm ${dateClass}">${p.dueDate ? new Date(p.dueDate).toLocaleDateString('es-MX') : 'N/A'}</td></tr>`;
+                    };
+                    return `<div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="card"><div class="p-5 border-b"><h2 class="text-xl font-bold text-gray-800">Pagos Próximos y Vencidos</h2></div><div class="p-5"><h3 class="font-semibold text-red-600 mb-2">Vencidos</h3>${overduePayments.length ? overduePayments.map(p => `<div class="text-sm p-2 bg-red-50 rounded mb-2">${p.entityName} — ${app.utils.formatCurrency(p.amount)}</div>`).join('') : '<p class="text-sm text-gray-500">No hay pagos vencidos.</p>'}<h3 class="font-semibold text-yellow-600 mt-4 mb-2">Próximos (7 días)</h3>${upcomingPayments.length ? upcomingPayments.map(p => `<div class="text-sm p-2 bg-yellow-50 rounded mb-2">${p.entityName} — ${app.utils.formatCurrency(p.amount)} — vence ${new Date(p.dueDate).toLocaleDateString('es-MX')}</div>`).join('') : '<p class="text-sm text-gray-500">No hay pagos próximos.</p>'}</div></div></div><div class="card"><div class="p-5 border-b"><h2 class="text-xl font-bold text-gray-800">Historial de Abonos</h2></div><div class="overflow-y-auto max-h-[60vh]"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Abono</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Monto</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Vencimiento</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${branchPayments.length ? branchPayments.map(renderPaymentRow).join('') : '<tr><td colspan="5" class="text-center py-8 text-gray-500">No hay abonos registrados.</td></tr>'}</tbody></table></div></div></div>`;
+                },
+                pos(state) {
+                    const products = state.products.filter(p => p.branchId === state.currentBranchId);
+                    const clients = state.clients.filter(c => c.branchId === state.currentBranchId && c.hasCredit);
+                    const categories = ['Todos', ...new Set(products.map(p => p.type))];
+                    const catBtns = categories.map(cat => `<button data-action="filterPosCategory" data-category="${cat}" class="category-filter" aria-pressed="${state.posCategoryFilter === cat}">${cat}</button>`).join('');
+                    const filtered = products.filter(p => (state.posCategoryFilter === 'Todos' || p.type === state.posCategoryFilter) && p.name.toLowerCase().includes(state.posSearchTerm.toLowerCase()));
+
+                    const grid = filtered.map(p => {
+                        const inCart = state.cart.find(i => i.id === p.id);
+                        const isOutOfStock = p.quantity <= 0;
+                        const isMaxInCart = inCart && inCart.quantity >= p.quantity;
+                        const disabled = isOutOfStock || isMaxInCart;
+                        let cardClass = 'pos-product-card';
+                        if (disabled) cardClass += ' disabled';
+                        if (inCart) cardClass += ' in-cart';
+
+                        return `
+                        <div data-action="addToCart" data-id="${p.id}" class="${cardClass}" ${disabled ? 'aria-disabled="true"' : ''}>
+                            <div class="pos-product-info">
+                                <h4 class="font-semibold">${p.name}</h4>
+                                <p class="text-xs text-gray-500">Stock: ${p.quantity}</p>
+                                <p class="font-bold text-green-600">${app.utils.formatCurrency(p.price)}</p>
+                            </div>
+                            ${inCart ? `<div class="in-cart-badge">En carrito (${inCart.quantity})</div>` : ''}
+                        </div>`;
+                    }).join('');
+
+                    const cartItems = state.cart.map(item => `
+                        <div class="flex items-center justify-between text-sm py-2">
+                            <div>
+                                <p class="font-semibold">${item.name}</p>
+                                <p class="text-gray-500">${app.utils.formatCurrency(item.price)} x ${item.quantity}</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" value="${item.quantity}" min="1" max="${state.products.find(p => p.id === item.id).quantity}" class="form-input w-16 text-center p-1" data-action="updateCartQuantity" data-id="${item.id}">
+                                <button data-action="removeFromCart" data-id="${item.id}" class="text-red-500 hover:text-red-700 text-xl" title="Quitar">&times;</button>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    const clientOptions = clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+                    return `
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                            <div class="lg:col-span-2 card p-4 flex flex-col h-[calc(100vh-8rem)]">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <input id="pos-search" type="text" placeholder="Buscar producto..." value="${state.posSearchTerm}" class="form-input flex-grow" autocomplete="off">
+                                </div>
+                                <div class="flex flex-wrap gap-2 mb-4 pb-4 border-b">${catBtns}</div>
+                                <div class="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto pr-2">
+                                    ${grid || '<p class="col-span-full text-center text-gray-500">No hay productos.</p>'}
+                                </div>
+                            </div>
+                            <div class="card p-4 flex flex-col h-[calc(100vh-8rem)]">
+                                <h2 class="text-2xl font-bold mb-4">Venta Actual</h2>
+                                <div class="flex-1 space-y-3 mb-4 overflow-y-auto border-b pb-4 pr-2">
+                                    ${cartItems || '<p class="text-center text-gray-400 py-8">El carrito está vacío</p>'}
+                                </div>
+                                <form id="pos-form" class="space-y-4 pt-4">
+                                    <div class="flex justify-between items-center text-xl font-bold">
+                                        <span>TOTAL:</span>
+                                        <span>${app.utils.formatCurrency(app.pos.calculateTotal())}</span>
+                                    </div>
+                                    <div>
+                                        <label for="paymentMethod" class="form-label">Método de Pago</label>
+                                        <select id="paymentMethod" name="paymentMethod" class="form-input w-full">
+                                            <option value="Contado">Contado</option>
+                                            <option value="Credito">Crédito</option>
+                                        </select>
+                                    </div>
+                                    <div id="clientSelectorContainer" class="hidden">
+                                        <label for="clientId" class="form-label">Cliente con Crédito</label>
+                                        <select id="clientId" name="clientId" class="form-input w-full">
+                                            <option value="">Seleccionar cliente...</option>
+                                            ${clientOptions}
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn-primary w-full py-3" ${state.cart.length === 0 ? 'disabled' : ''}>Finalizar Venta</button>
+                                </form>
+                            </div>
+                        </div>`;
+                },
+                cashReconciliation(state) {
+                    const systemTotal = app.cash.calculateSystemTotal();
+                    const branchRecs = state.cashReconciliations.filter(r => r.branchId === state.currentBranchId);
+                    const rows = [...branchRecs].reverse().map(r => {
+                        let cls = 'text-green-600'; if (r.discrepancy < 0) cls = 'text-red-600'; else if (r.discrepancy > 0) cls = 'text-yellow-600';
+                        return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatDateTime(r.date)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatCurrency(r.systemTotalCash)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatCurrency(r.physicalCashCount)}</td><td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${cls}">${app.utils.formatCurrency(r.discrepancy)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${r.notes || '-'}</td></tr>`;
+                    }).join('');
+                    return `<div class="grid grid-cols-1 lg:grid-cols-5 gap-6"><div class="lg:col-span-2"><form id="cash-reconciliation-form" class="card p-6 space-y-6"><h2 class="text-2xl font-bold text-gray-800">Realizar Corte de Caja</h2><div><label class="block text-sm font-medium text-gray-500">Ventas en Efectivo (Sistema)</label><p class="text-3xl font-bold text-green-700 mt-1">${app.utils.formatCurrency(systemTotal)}</p></div><div><label for="physical-cash-input" class="form-label">Efectivo Físico en Caja</label><input type="number" step="0.01" id="physical-cash-input" name="physicalCash" data-system-total="${systemTotal}" class="form-input w-full" placeholder="0.00" required></div><div><label class="block text-sm font-medium text-gray-500">Discrepancia</label><p id="discrepancy-display" class="font-bold text-lg text-gray-700 mt-1">${app.utils.formatCurrency(0)}</p></div><div><label for="notes" class="form-label">Notas (Opcional)</label><textarea id="notes" name="notes" rows="3" class="form-input w-full"></textarea></div><button type="submit" class="btn-primary w-full py-3">Finalizar Corte</button></form></div><div class="lg:col-span-3 card p-6"><h2 class="text-2xl font-bold text-gray-800 mb-4">Historial de Cortes</h2><div class="overflow-x-auto max-h-[65vh]"><table class="min-w-full divide-y divide-gray-200" aria-label="Historial de cortes de caja"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sistema</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Físico</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discrepancia</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${rows || `<tr><td colspan="5" class="text-center py-8 text-gray-500">No hay cortes.</td></tr>`}</tbody></table></div></div></div>`;
+                },
+                transfers(state) {
+                    const otherBranches = state.branches.filter(b => b.id !== state.currentBranchId);
+                    const branchProducts = state.products.filter(p => p.branchId === state.currentBranchId);
+                    const otherBranchesOptions = otherBranches.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+                    const productOptions = branchProducts.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.quantity})</option>`).join('');
+                    const rows = [...state.transfers].reverse().map(t => { const fromBranch = state.branches.find(b => b.id === t.fromBranchId)?.name || 'N/A'; const toBranch = state.branches.find(b => b.id === t.toBranchId)?.name || 'N/A'; return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${app.utils.formatDateTime(t.date)}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fromBranch}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${toBranch}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${t.productName}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${t.quantity}</td></tr>`; }).join('');
+                    return `<div class="grid grid-cols-1 lg:grid-cols-5 gap-6"><div class="lg:col-span-2"><form id="transfer-form" class="card p-6 space-y-6"><h2 class="text-2xl font-bold text-gray-800">Iniciar Transferencia</h2><div><label class="block text-sm font-medium text-gray-500">Desde Sucursal</label><p class="text-lg font-semibold text-gray-800 mt-1">${state.branches.find(b => b.id === state.currentBranchId).name}</p></div><div><label for="toBranchId" class="form-label">Hacia Sucursal</label><select id="toBranchId" name="toBranchId" class="form-input w-full" required><option value="">Seleccionar destino...</option>${otherBranchesOptions}</select></div><div><label for="productId" class="form-label">Producto a Transferir</label><select id="productId" name="productId" class="form-input w-full" required><option value="">Seleccionar producto...</option>${productOptions}</select></div><div><label for="quantity" class="form-label">Cantidad</label><input type="number" id="quantity" name="quantity" min="1" class="form-input w-full" placeholder="0" required></div><button type="submit" class="btn-primary w-full py-3">Realizar Transferencia</button></form></div><div class="lg:col-span-3 card p-6"><h2 class="text-2xl font-bold text-gray-800 mb-4">Historial de Transferencias</h2><div class="overflow-x-auto max-h-[65vh]"><table class="min-w-full divide-y divide-gray-200" aria-label="Historial de transferencias"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origen</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destino</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${rows || `<tr><td colspan="5" class="text-center py-8 text-gray-500">No hay transferencias.</td></tr>`}</tbody></table></div></div></div>`;
+                },
+                settings(state) {
+                    const branchRows = state.branches.map(b => `<div class="flex items-center justify-between py-3 px-4 hover:bg-gray-50"><p class="text-gray-800">${b.name}</p><div class="space-x-4"><button data-action="showBranchModal" data-id="${b.id}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Editar</button><button data-action="deleteItem" data-type="branch" data-id="${b.id}" class="text-sm text-red-600 hover:text-red-800 font-medium">Eliminar</button></div></div>`).join('');
+                    const userRows = state.users.map(u => { const branchName = u.branchId ? state.branches.find(b => b.id === u.branchId)?.name : 'N/A (Admin)'; return `<div class="flex items-center justify-between py-3 px-4 hover:bg-gray-50"><div><p class="text-gray-800 font-semibold">${u.name}</p><p class="text-sm text-gray-500">Sucursal: ${branchName} | Rol: ${u.role}</p></div><div class="space-x-4"><button data-action="showUserModal" data-id="${u.id}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Editar</button><button data-action="deleteItem" data-type="user" data-id="${u.id}" class="text-sm text-red-600 hover:text-red-800 font-medium">Eliminar</button></div></div>`; }).join('');
+                    return `<div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div class="card"><div class="p-5 border-b flex justify-between items-center"><h2 class="text-xl font-bold text-gray-800">Gestionar Sucursales</h2><button data-action="showBranchModal" class="btn-primary text-sm">Nueva</button></div><div class="divide-y max-h-96 overflow-y-auto">${branchRows}</div></div><div class="card"><div class="p-5 border-b flex justify-between items-center"><h2 class="text-xl font-bold text-gray-800">Gestionar Usuarios</h2><button data-action="showUserModal" class="btn-primary text-sm">Nuevo</button></div><div class="divide-y max-h-96 overflow-y-auto">${userRows}</div></div></div>`;
+                },
+            },
+
+            modals: {
+                product(id) {
+                    const p = id ? app.state.products.find(x => x.id === id) : {};
+                    const title = p.id ? 'Editar Producto' : 'Agregar Producto';
+                    const formContent = `<form id="product-form" class="space-y-4"><input type="hidden" name="id" value="${p.id || ''}"><div><label for="name" class="form-label">Nombre del Producto</label><input type="text" id="name" name="name" value="${p.name || ''}" class="form-input" required></div><div><label for="type" class="form-label">Tipo</label><select id="type" name="type" class="form-input"><option ${p.type === 'Agroquímico' ? 'selected' : ''}>Agroquímico</option><option ${p.type === 'Fertilizante' ? 'selected' : ''}>Fertilizante</option><option ${p.type === 'Semilla' ? 'selected' : ''}>Semilla</option><option ${p.type === 'Otro' ? 'selected' : ''}>Otro</option></select></div><div><div class="flex justify-between items-center mb-1"><label for="description" class="form-label">Descripción</label><button type="button" data-action="generateDescription" class="text-xs text-purple-600 hover:text-purple-800 font-semibold" title="Generar descripción con IA"><i class="fas fa-wand-magic-sparkles mr-1"></i>Generar con IA</button></div><textarea id="description" name="description" rows="3" class="form-input">${p.description || ''}</textarea></div><div class="grid grid-cols-2 gap-4"><div><label for="quantity" class="form-label">Cantidad (Stock)</label><input type="number" id="quantity" name="quantity" value="${p.quantity || 0}" class="form-input" required></div><div><label for="minStock" class="form-label">Stock Mínimo</label><input type="number" id="minStock" name="minStock" value="${p.minStock || 0}" class="form-input" required></div></div><div><label for="price" class="form-label">Precio</label><input type="number" step="0.01" id="price" name="price" value="${p.price || ''}" class="form-input" required></div><div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form>`;
+                    app.utils.renderModal(title, formContent);
+                },
+                client(id) {
+                    const c = id ? app.state.clients.find(x => x.id === id) : {};
+                    const title = c.id ? 'Editar Cliente' : 'Agregar Cliente';
+                    const formContent = `<form id="client-form" class="space-y-4"><input type="hidden" name="id" value="${c.id || ''}"><div><label for="name" class="form-label">Nombre Completo</label><input type="text" id="name" name="name" value="${c.name || ''}" class="form-input" required></div><div><label for="phone" class="form-label">Teléfono</label><input type="tel" id="phone" name="phone" value="${c.phone || ''}" class="form-input"></div><div><label for="email" class="form-label">Email</label><input type="email" id="email" name="email" value="${c.email || ''}" class="form-input"></div><div class="flex items-center"><input type="checkbox" id="hasCredit" name="hasCredit" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500" ${c.hasCredit ? 'checked' : ''}><label for="hasCredit" class="ml-2 block text-sm text-gray-900">Tiene Crédito</label></div><div class="credit-details space-y-4 border-t pt-4 ${c.hasCredit ? '' : 'hidden'}"><div><label for="creditLimit" class="form-label">Límite de Crédito</label><input type="number" step="0.01" id="creditLimit" name="creditLimit" value="${c.creditLimit || ''}" class="form-input"></div><div class="grid grid-cols-2 gap-4"><div><label for="creditCutoffDate" class="form-label">Fecha de Corte</label><input type="date" id="creditCutoffDate" name="creditCutoffDate" value="${c.creditCutoffDate || ''}" class="form-input"></div><div><label for="creditPaymentDate" class="form-label">Fecha Límite de Pago</label><input type="date" id="creditPaymentDate" name="creditPaymentDate" value="${c.creditPaymentDate || ''}" class="form-input"></div></div></div><div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form>`;
+                    app.utils.renderModal(title, formContent);
+                },
+                supplier(id) {
+                    const s = id ? app.state.suppliers.find(x => x.id === id) : {};
+                    const title = s.id ? 'Editar Proveedor' : 'Agregar Proveedor';
+                    const formContent = `<form id="supplier-form" class="space-y-4"><input type="hidden" name="id" value="${s.id || ''}"><div><label for="name" class="form-label">Nombre del Proveedor</label><input type="text" id="name" name="name" value="${s.name || ''}" class="form-input" required></div><div><label for="contact" class="form-label">Nombre de Contacto</label><input type="text" id="contact" name="contact" value="${s.contact || ''}" class="form-input"></div><div><label for="phone" class="form-label">Teléfono</label><input type="tel" id="phone" name="phone" value="${s.phone || ''}" class="form-input"></div><div class="flex items-center"><input type="checkbox" id="hasCredit" name="hasCredit" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500" ${s.hasCredit ? 'checked' : ''}><label for="hasCredit" class="ml-2 block text-sm text-gray-900">Nos da Crédito</label></div><div class="credit-details space-y-4 border-t pt-4 ${s.hasCredit ? '' : 'hidden'}"><div><label for="creditLimit" class="form-label">Límite de Crédito</label><input type="number" step="0.01" id="creditLimit" name="creditLimit" value="${s.creditLimit || ''}" class="form-input"></div><div class="grid grid-cols-2 gap-4"><div><label for="creditCutoffDate" class="form-label">Fecha de Corte</label><input type="date" id="creditCutoffDate" name="creditCutoffDate" value="${s.creditCutoffDate || ''}" class="form-input"></div><div><label for="creditPaymentDate" class="form-label">Fecha Límite de Pago</label><input type="date" id="creditPaymentDate" name="creditPaymentDate" value="${s.creditPaymentDate || ''}" class="form-input"></div></div></div><div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form>`;
+                    app.utils.renderModal(title, formContent);
+                },
+                purchase() {
+                    const suppliers = app.state.suppliers.filter(s => s.branchId === app.state.currentBranchId).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+                    const products = app.state.products.filter(p => p.branchId === app.state.currentBranchId).map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                    const formContent = `<form id="purchase-form" class="space-y-4"><div><label for="supplierId" class="form-label">Proveedor</label><select id="supplierId" name="supplierId" class="form-input" required>${suppliers}</select></div><div><label for="productId" class="form-label">Producto</label><select id="productId" name="productId" class="form-input" required>${products}</select></div><div class="grid grid-cols-2 gap-4"><div><label for="quantity" class="form-label">Cantidad</label><input type="number" id="quantity" name="quantity" class="form-input" required></div><div><label for="cost" class="form-label">Costo Total</label><input type="number" step="0.01" id="cost" name="cost" class="form-input" required></div></div><div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Registrar Compra</button></div></form>`;
+                    app.utils.renderModal('Registrar Compra', formContent);
+                },
+                saleDetail(id) {
+                    const sale = app.state.sales.find(s => s.id === id);
+                    if (!sale) return;
+                    const itemsHtml = sale.items.map(item => `<li class="flex justify-between items-center py-2"><span>${item.quantity} x ${item.name}</span><span class="font-medium">${app.utils.formatCurrency(item.quantity * item.price)}</span></li>`).join('');
+                    const content = `<div class="space-y-4"><p><strong>Cliente:</strong> ${sale.clientName}</p><p><strong>Fecha:</strong> ${app.utils.formatDateTime(sale.date)}</p><p><strong>Método de pago:</strong> ${sale.paymentMethod}</p><ul class="divide-y">${itemsHtml}</ul><div class="flex justify-between items-center font-bold text-lg pt-2 border-t"><span>Total:</span><span>${app.utils.formatCurrency(sale.total)}</span></div></div>`;
+                    app.utils.renderModal(`Detalle de Venta #${sale.id}`, content);
+                },
+                payment(id, type) {
+                    const collection = type === 'client' ? app.state.clients : app.state.suppliers;
+                    const entity = collection.find(e => e.id === id);
+                    if (!entity) return;
+                    const title = `Registrar Abono a ${entity.name}`;
+                    const formContent = `<form id="payment-form" class="space-y-4"><input type="hidden" name="entityId" value="${id}"><input type="hidden" name="type" value="${type}"><div><p>Saldo Actual: <strong class="text-red-600">${app.utils.formatCurrency(entity.creditUsed)}</strong></p></div><div><label for="amount" class="form-label">Monto del Abono</label><input type="number" step="0.01" id="amount" name="amount" class="form-input" required></div><div><label for="dueDate" class="form-label">Próxima Fecha de Pago (Opcional)</label><input type="date" id="dueDate" name="dueDate" class="form-input"></div><div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Registrar Abono</button></div></form>`;
+                    app.utils.renderModal(title, formContent);
+                },
+                branch(id) {
+                    const b = id ? app.state.branches.find(x => x.id === id) : {};
+                    const title = b.id ? 'Editar Sucursal' : 'Nueva Sucursal';
+                    const formContent = `<form id="branch-form" class="space-y-4"><input type="hidden" name="id" value="${b.id || ''}"><div><label for="name" class="form-label">Nombre de la Sucursal</label><input type="text" id="name" name="name" value="${b.name || ''}" class="form-input" required></div><div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form>`;
+                    app.utils.renderModal(title, formContent);
+                },
+                user(id) {
+                    const u = id ? app.state.users.find(x => x.id === id) : {};
+                    const title = u.id ? 'Editar Usuario' : 'Nuevo Usuario';
+                    const branchOptions = app.state.branches.map(b => `<option value="${b.id}" ${u.branchId == b.id ? 'selected' : ''}>${b.name}</option>`).join('');
+                    const formContent = `<form id="user-form" class="space-y-4"><input type="hidden" name="id" value="${u.id || ''}"><div><label for="name" class="form-label">Nombre Completo</label><input type="text" id="name" name="name" value="${u.name || ''}" class="form-input" required></div><div><label for="username" class="form-label">Email (usuario)</label><input type="email" id="username" name="username" value="${u.username || ''}" class="form-input" required></div><div><label for="password" class="form-label">Contraseña</label><input type="password" id="password" name="password" value="${u.password || ''}" class="form-input" required></div><div><label for="role" class="form-label">Rol</label><select id="role" name="role" class="form-input" required><option value="Vendedor" ${u.role === 'Vendedor' ? 'selected' : ''}>Vendedor</option><option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Admin</option></select></div><div><label for="branchId" class="form-label">Sucursal Asignada</label><select id="branchId" name="branchId" class="form-input" required>${branchOptions}</select></div><div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Guardar</button></div></form>`;
+                    app.utils.renderModal(title, formContent);
+                },
+            },
+        };
+
+        app.init();
+    });
+</script>
+</html>
