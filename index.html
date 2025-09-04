@@ -58,6 +58,13 @@
             .sidebar-overlay.open {
                 display: none;
             }
+             .main-panel {
+                width: 100%;
+                transition: padding-left 0.3s ease-in-out;
+            }
+            .admin-panel.open .main-panel {
+                padding-left: 280px;
+            }
         }
         .nav-link {
             transition: background-color 0.2s, color 0.2s;
@@ -231,10 +238,10 @@
 </head>
 <body>
     <!-- Login Screen -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-100 transition-opacity duration-500 ease-in-out">
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-100">
         <div class="w-full max-w-sm p-8 bg-white rounded-lg shadow-xl border border-gray-200">
             <div class="flex flex-col items-center mb-6">
-                <img src="logo.png" alt="Agronare Logo" class="h-40 mb-4 rounded-full">
+                <img src="logo.png" alt="Agronare Logo" class="h-40 mb-4">
                 <h2 class="text-2xl font-bold text-gray-900">Iniciar Sesión</h2>
             </div>
             <form id="login-form" class="space-y-4">
@@ -253,12 +260,12 @@
     </div>
 
     <!-- Admin Panel -->
-    <div id="admin-panel" class="hidden h-screen w-full flex bg-gray-100 transition-opacity duration-500 ease-in-out">
+    <div id="admin-panel" class="h-screen w-full flex bg-gray-100 hidden">
         <!-- Sidebar -->
         <aside id="sidebar" class="sidebar bg-white shadow-xl flex flex-col">
-            <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                <img src="logo.png" alt="Agronare Logo" class="h-10">
-                <button id="menu-toggle" class="md:hidden text-gray-500 hover:text-gray-700 text-2xl leading-none" aria-label="Cerrar menú">
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                <img src="logo.png" alt="Agronare Logo" class="h-20">
+                <button id="menu-toggle-close" class="md:hidden text-gray-500 hover:text-gray-700 text-2xl" aria-label="Cerrar menú">
                     &times;
                 </button>
             </div>
@@ -319,22 +326,17 @@
             </div>
         </aside>
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
-
-        <!-- Main Panel -->
         <main class="main-panel flex-1 flex flex-col h-screen overflow-y-auto w-full transition-all duration-300">
-            <!-- Top Bar -->
             <header class="bg-white sticky top-0 z-10 shadow-sm border-b border-gray-200">
                 <div class="px-6 py-4 flex items-center justify-between">
                     <div class="flex items-center">
-                        <button id="menu-toggle" class="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 mr-4" aria-label="Abrir menú">
+                        <button id="menu-toggle" class="text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 mr-4" aria-label="Abrir menú">
                             <i class="fas fa-bars" aria-hidden="true"></i>
                         </button>
                         <h1 id="section-title" class="text-2xl font-bold text-gray-800">Dashboard</h1>
                     </div>
                 </div>
             </header>
-
-            <!-- Main Content Area -->
             <div id="main-content" class="flex-1 p-6 space-y-6 overflow-y-auto">
                 <!-- Content will be injected here -->
             </div>
@@ -409,7 +411,11 @@
                 this.cacheDOM();
                 this.loadFromStorage();
                 this.bindEvents();
-                this.navigateTo('dashboard'); // Iniciar en el dashboard
+                this.navigateTo('dashboard');
+                if (window.innerWidth >= 768) {
+                    this.dom.sidebar.classList.add('open');
+                    this.dom.adminPanel.classList.add('open');
+                }
             },
 
             cacheDOM() {
@@ -427,6 +433,7 @@
                     navMenu: document.getElementById('nav-menu'),
                     sectionTitle: document.getElementById('section-title'),
                     menuToggle: document.getElementById('menu-toggle'),
+                    menuToggleClose: document.getElementById('menu-toggle-close'),
                     branchSelector: document.getElementById('branch-selector'),
                     branchSelectorContainer: document.getElementById('branch-selector-container'),
                     userDisplay: document.getElementById('user-display'),
@@ -439,13 +446,15 @@
                     const d = Object.fromEntries(new FormData(e.target));
                     this.handleLogin(d.username, d.password);
                 });
-
+                
                 document.body.addEventListener('click', this.handleAction.bind(this));
-                document.body.addEventListener('submit', this.handleFormSubmit.bind(this));
+                document.body.addEventListener('submit', this.handleFormSubmit.bind(this), true);
                 document.body.addEventListener('input', this.handleInput.bind(this));
                 document.body.addEventListener('change', this.handleChange.bind(this));
                 this.dom.branchSelector.addEventListener('change', this.handleBranchSwitch.bind(this));
+                
                 this.dom.menuToggle.addEventListener('click', () => this.toggleSidebar());
+                this.dom.menuToggleClose.addEventListener('click', () => this.toggleSidebar());
                 this.dom.sidebarOverlay.addEventListener('click', () => this.toggleSidebar());
             },
 
@@ -475,13 +484,9 @@
                 if (user) {
                     this.state.currentUser = user;
                     this.dom.loginError.textContent = '';
-                    this.dom.loginScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        this.dom.loginScreen.classList.add('hidden');
-                        this.dom.adminPanel.classList.remove('hidden');
-                        setTimeout(() => this.dom.adminPanel.style.opacity = '1', 50);
-                        this.setupPanelForUser();
-                    }, 500);
+                    this.dom.loginScreen.classList.add('hidden');
+                    this.dom.adminPanel.classList.remove('hidden');
+                    this.setupPanelForUser();
                 } else {
                     this.dom.loginError.textContent = 'Usuario o contraseña incorrectos.';
                 }
@@ -489,18 +494,20 @@
 
             handleLogout() {
                 this.state.currentUser = null;
-                this.dom.adminPanel.style.opacity = '0';
-                setTimeout(() => {
-                    this.dom.adminPanel.classList.add('hidden');
-                    this.dom.loginScreen.classList.remove('hidden');
-                    this.dom.loginForm.reset();
-                    setTimeout(() => this.dom.loginScreen.style.opacity = '1', 50);
-                }, 500);
+                this.dom.adminPanel.classList.add('hidden');
+                this.dom.loginScreen.classList.remove('hidden');
+                this.dom.loginForm.reset();
             },
 
             toggleSidebar() {
-                this.dom.sidebar.classList.toggle('open');
-                this.dom.sidebarOverlay.classList.toggle('open');
+                const sidebar = this.dom.sidebar;
+                const overlay = this.dom.sidebarOverlay;
+                const adminPanel = this.dom.adminPanel;
+                const isOpen = sidebar.classList.toggle('open');
+                overlay.classList.toggle('open', isOpen);
+                if (window.innerWidth >= 768) {
+                    adminPanel.classList.toggle('open', isOpen);
+                }
             },
 
             setupPanelForUser() {
@@ -550,7 +557,7 @@
                     const title = this.dom.navMenu.querySelector(`.nav-link[data-section="${this.state.currentSection}"] span`).textContent;
                     this.dom.sectionTitle.textContent = title;
                     if (this.state.currentSection === 'dashboard') {
-                        setTimeout(() => this.renderCharts(), 0); // Corregido: Retrasar renderizado de gráficos
+                        setTimeout(() => this.renderCharts(), 0);
                     }
                 }
             },
@@ -789,7 +796,7 @@
 
             gemini: {
                 async generateText(prompt, useGrounding = false) {
-                    const apiKey = ""; // Canvas inyectará la clave de API en runtime
+                    const apiKey = "";
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
                     const payload = { contents: [{ parts: [{ text: prompt }] }] };
                     if (useGrounding) payload.tools = [{ google_search: {} }];
@@ -1388,8 +1395,7 @@ ${productsSummary}`;
 
                 showNotification(message, type = 'success', undoCallback = null) {
                     const n = document.createElement('div');
-                    const t = (type === 'warn' ? 'notification-warning' : `notification-${type}`);
-                    n.className = `notification ${t}`;
+                    const t = (type === 'warn' ? 'notification-warn' : `notification-${type}`);                    n.className = `notification ${t}`;
                     n.innerHTML = `<span>${message}</span>${undoCallback ? '<button class="undo-btn" title="Deshacer" aria-label="Deshacer">Deshacer</button>' : ''}`;
 
                     const c = app.dom.notificationContainer;
